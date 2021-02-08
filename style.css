@@ -1,0 +1,90 @@
+* {
+	font-family: Arial, sans;
+	margin: 0;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+}
+
+h1 {
+	margin: 1em 0;
+	text-align: center;
+}
+
+#container {
+    margin: 0 auto;
+   
+}
+
+#container input {
+	height: 2.5em;
+	visibility: hidden;
+}
+
+#container label {
+	background: #f9f9f9;  /* Fondo de las pestañas */
+	border-radius: .25em .25em 0 0;
+	color: #888;  /* Color del texto de las pestañas */
+	cursor: pointer;
+	display: block;
+	float: left;
+	font-size: 1em;  /* Tamaño del texto de las pestañas */
+	height: 2.5em;
+	line-height: 2.5em;
+	margin-right: .25em;
+	padding: 0 1.5em;
+	text-align: center;
+}
+
+#container input:hover + label {
+	color: #000000;  /* Color del texto de las pestañas al pasar el cursor por encima */
+}
+
+#container input:checked + label {
+	background: #e1e1e1;  /* Fondo de las pestañas al presionar */
+	color: #444; /* Color de las pestañas al presionar */
+	position: relative;
+	z-index: 6;
+	font-weight: bold;
+	/*
+	-webkit-transition: .1s;
+	-moz-transition: .1s;
+	-o-transition: .1s;
+	-ms-transition: .1s;
+	*/
+}
+
+#content {
+	background: #e1e1e1;  /* Fondo del contenido */
+	border-radius: 0 .25em .25em .25em;
+	min-height: 13em;  /* Alto del contenido */
+	position: relative;
+	z-index: 5;
+}
+
+#content div {
+	opacity: 0;
+	padding: 1.5em;
+	position: absolute;
+	z-index: -100;
+	/*
+	transition: all linear 0.1s;
+	*/
+}
+
+
+
+#container input#tab-1:checked ~ #content #content-1,
+#container input#tab-2:checked ~ #content #content-2,
+#container input#tab-3:checked ~ #content #content-3 {
+    opacity: 1;
+    z-index: 100;
+}
+
+input.visible {
+  visibility: visible !important;
+}
+
+
+
+
+.active { font-weight:bold; background-color:white}

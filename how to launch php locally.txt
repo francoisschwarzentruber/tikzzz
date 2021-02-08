@@ -1,0 +1,2 @@
+1) tapez sudo php -S 127.0.0.1:80 dans le répertoire de l'application
+2) allez à http://127.0.0.1:80/ dans firefox
