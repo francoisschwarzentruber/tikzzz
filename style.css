@@ -10,6 +10,10 @@ vertical-align: top;
 }
 
 
+textarea {
+  font-family: Courier;
+}
+
 h1 {
 	margin: 1em 0;
 	text-align: center;
@@ -92,4 +96,4 @@ input.visible {
 
 
 
-.active { font-weight:bold; background-color:white}
+.active {  background-color:rgb(192, 192, 255);}
