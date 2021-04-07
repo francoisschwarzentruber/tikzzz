@@ -2,7 +2,7 @@
 
 tikzzz is a tiny tikz editor in the browser.
 - when you write your tikz code, the image is updated ;
-- When you move nodes with the mouse, the code is updated ;
+- When you move nodes with the mouse, the code is updated.
 
 > It is inspired by [QTikZ](https://linuxx.info/qtikz/) and [KTikZ](https://userbase.kde.org/KtikZ).
 
