@@ -5,6 +5,11 @@
 	-moz-box-sizing: border-box;
 }
 
+tr {
+vertical-align: top;
+}
+
+
 h1 {
 	margin: 1em 0;
 	text-align: center;
