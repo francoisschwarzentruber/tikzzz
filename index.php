@@ -45,9 +45,9 @@ session_start(); // Création de la session
   </td>
   
   <td>
-<button id="buttonDownload" onclick="download()"><img height=32px src="download.png"/>Download</button>
-<button id="buttonModeSelection" class="active" onclick="modeselection()"><img height=32px src="cursor.svg"/>Select</button>
-<button id="buttonModeDraw" onclick="modedraw()"><img height=32px src="pen.png"/>Draw</button></br>
+<button id="buttonDownload" onclick="download()">❤️ Download</button>
+<button id="buttonModeSelection" class="active" onclick="modeselection()">✋ Select</button>
+<button id="buttonModeDraw" onclick="modedraw()">✎ Draw</button></br>
   <canvas id="canvas" width=800 height=600/>
   </td>
   

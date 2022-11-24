@@ -17,6 +17,8 @@ On Ubuntu, install `php7.2-cli` package:
 $ sudo apt install php7.2-cli
 ```
 
+Install also pdf2svg.
+
 ## How to launch it?
 
 Use this Shell script [runlocally.sh](runlocally.sh):
