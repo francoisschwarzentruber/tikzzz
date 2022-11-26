@@ -520,12 +520,12 @@ function selectBracket() {
 function tikzcodeCoordinatesSelect(point) {
 	editor.selection.setRange({
 		start: editor.session.doc.indexToPosition(point.posbegin),
-		end: editor.session.doc.indexToPosition(point.posend + 1 )
+		end: editor.session.doc.indexToPosition(point.posend + 1)
 	})
 }
 
 function tikzcodeAddLine(line) {
-	const code = getCode();
+	let code = getCode();
 	const i = code.indexOf('\\end{tikzpicture}');
 	if (i < 0)
 		code = code + "\n" + line;
@@ -536,9 +536,7 @@ function tikzcodeAddLine(line) {
 }
 
 
-function replaceIt(newtxt) {
-	editor.session.replace(editor.selection.getRange(), newtxt);
-}
+
 
 
 

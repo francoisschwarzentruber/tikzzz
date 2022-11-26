@@ -107,7 +107,7 @@ input.visible {
 
 #code {
 	width: 50%;
-	top: 40px;
+	top: 60px;
 	position:absolute;
 	bottom: 0px;
 	left: 0;
@@ -126,6 +126,6 @@ input.visible {
 
 canvas {
 	position: absolute;
-	top: 40px;
+	top: 60px;
 	left: 50%
 }

@@ -9,7 +9,7 @@ session_start(); // Création de la session
   <title></title>
   <meta content="">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.12.3/src-noconflict/ace.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.12.3/src-noconflict/ace.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css">
   <script src="js/jquery-1.11.0.min.js" type="text/javascript"></script>
 
@@ -23,6 +23,7 @@ session_start(); // Création de la session
       <button id="buttonModeSelection" class="active" onclick="modeselection()">✋ Select</button>
       <button id="buttonModeDraw" onclick="modedraw()">✎ Draw</button>
 </span>
+<div id="toolbarInsert"></div>
   </div>
   <div>
     <div id="code"></div>
