@@ -1,68 +1,43 @@
 var grid = 0.5;
-
-
 var phperror;
-
-
-
 var isaskedcompiling = false;
-
 var compiletimer = null;
 
-function getTikzCodeWithBoundingBox(code) {
-	var i = code.indexOf('\\end{tikzpicture}');
 
+
+
+
+
+function getTikzCodeWithBoundingBox(code) {
+	const i = code.indexOf('\\end{tikzpicture}');
 	if (i < 0)
 		return code;
 	else {
 		code = code.substring(0, i) + '\\node at (-10, -10) {};\n\\node at (10, 10) {};\n' + '\\end{tikzpicture}';
-
 		return code;
-
 	}
-
-}
-
-
-
-
-function makeid() {
-	var text = "";
-	var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-	for (var i = 0; i < 5; i++)
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-	return text;
 }
 
 
 function getTikzcodeNewLabel() {
-	var code = $('#code').val();
-
-	while (true) {
-		var str = makeid();
-
-		if (code.indexOf("(" + str + ")") == -1)
-			return str;
-
+	const code = getCode();
+	for (let i = 0; i < 5000; i++) {
+		const id = "v" + i;
+		if (code.indexOf("(" + id + ")") == -1)
+			return id;
 	}
-
+	return "v42";
 }
 
 
-
-
-
-var phpcompileURL = "tikz.php";   //"http://127.0.0.1/servertikzzz/tikz.php"; //"tikz.php";
+const phpcompileURL = "tikz.php";   //"http://127.0.0.1/servertikzzz/tikz.php"; //"tikz.php";
 var lastSVGfile = undefined;
 
 
 function compile(trueiffinalversiontodownload, callBackIfSuccess) {
-
 	gui_compiling();
 	console.log("compile");
-	var code = $('#code').val();
+	var code = getCode();
 
 	if (trueiffinalversiontodownload == undefined)
 		trueiffinalversiontodownload = false;
@@ -82,7 +57,7 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 				isaskedcompiling = false;
 			}
 			var d = new Date();
-			
+
 			const lines = response.split("\n");
 			lastSVGfile = lines[lines.length - 1] + ".svg?" + d.getTime();
 
@@ -104,9 +79,6 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 					draw();
 				else
 					callBackIfSuccess();
-
-
-
 			};
 
 			img.onerror = function () {
@@ -121,10 +93,6 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 		}
 
 	});
-
-
-
-
 }
 
 
@@ -137,10 +105,8 @@ function whenmodified() {
 	if (!isaskedcompiling) {
 		isaskedcompiling = true;
 		if (compiletimer != null) clearTimeout(compiletimer);
-		compiletimer = setTimeout(function () { compile(); points = getPointsFromTikz($('#code').val()); draw(); }, 1000);
+		compiletimer = setTimeout(function () { compile(); points = getPointsFromTikz(getCode()); draw(); }, 1000);
 	}
-
-
 }
 
 function whenmodifiedquick() {
@@ -151,19 +117,19 @@ function whenmodifiedquick() {
 		if (compiletimer != null) clearTimeout(compiletimer);
 		compiletimer = setTimeout(compile, 0);
 	}
-	points = getPointsFromTikz($('#code').val());
+	points = getPointsFromTikz(getCode());
 	draw();
 }
 
 
 
 function getPointsFromTikz(str) {
-	var points = new Array();
-	var counter = 0;
-	var name = undefined;
+	const points = new Array();
+	let counter = 0;
+	let name = undefined;
 
 	console.log("getPointsFromTikz");
-	var i = 0;
+	let i = 0;
 	while (i >= 0) {
 		i = str.indexOf("(", i);
 
@@ -172,8 +138,8 @@ function getPointsFromTikz(str) {
 			var iend = str.indexOf(")", i);
 
 
-			var n1 = str.substring(i + 1, icomma);
-			var n2 = str.substring(icomma + 1, iend);
+			const n1 = str.substring(i + 1, icomma);
+			const n2 = str.substring(icomma + 1, iend);
 
 			if ((i < iend) && ((iend < icomma) || (icomma < i))) {
 				iname = i;
@@ -199,14 +165,8 @@ function getPointsFromTikz(str) {
 			return points;
 
 	}
-
 	return points;
 }
-
-
-
-
-
 
 
 
@@ -221,11 +181,6 @@ function drawPoint(ctx, point) {
 	ctx.beginPath();
 	ctx.moveTo(point.x - crosssize, point.y + crosssize);
 	ctx.lineTo(point.x + crosssize, point.y - crosssize);
-
-
-
-
-
 	ctx.stroke();
 }
 
@@ -255,9 +210,6 @@ function drawGrid(ctx) {
 }
 
 
-
-
-
 function drawLines(ctx, points) {
 	ctx.beginPath();
 	ctx.strokeStyle = "#888888";
@@ -265,11 +217,8 @@ function drawLines(ctx, points) {
 
 	ctx.moveTo(points[0].x, points[0].y);
 
-	for (var i = 1; i < points.length; i++) {
+	for (let i = 1; i < points.length; i++)
 		ctx.lineTo(points[i].x, points[i].y);
-
-	}
-
 
 	ctx.stroke();
 }
@@ -281,11 +230,8 @@ function draw() {
 	var canvas = document.getElementById("canvas");
 	var ctx = canvas.getContext("2d");
 
-	if (img == null)
-		return;
-
-	if (!img.complete)
-		return;
+	if (img == null) return;
+	if (!img.complete) return;
 
 	try {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -371,61 +317,44 @@ function getCoordinatesFromPixelCoordinatesGrid(p) {
 }
 
 
-
-
 function getCoordinatesFromPixelCoordinates(p) {
 	return { x: ((p.x - boundedbox) / scaleratio), y: -((p.y - boundedbox) / scaleratio) };
 }
 
 
 
-
-
-
-
-
-
-
-
-var mouseInteractionThesholdDistance = 0.5;
+const mouseInteractionThesholdDistance = 0.5;
 
 
 function getMousePos(canvas, evt) {
-	var rect = canvas.getBoundingClientRect();
+	const rect = canvas.getBoundingClientRect();
 	return {
 		x: evt.clientX - rect.left,
 		y: evt.clientY - rect.top
 	};
 }
 
-var MOUSEINTERATION_NONE = 0;
-var MOUSEINTERATION_MOVEPOINT = 1;
-var MOUSEINTERATION_SELECT = 2;
-var MOUSEINTERATION_DRAW = 3;
+const MOUSEINTERATION_NONE = 0;
+const MOUSEINTERATION_MOVEPOINT = 1;
+const MOUSEINTERATION_SELECT = 2;
+const MOUSEINTERATION_DRAW = 3;
 
-var mouseButtonDown = false;
-var mouseInteraction = 0;
+let mouseButtonDown = false;
+let mouseInteraction = 0;
 
-var mouseInteractionDrawPoint1 = undefined;
-var mouseInteractionDrawPoints = undefined;
+let mouseInteractionDrawPoint1 = undefined;
+let mouseInteractionDrawPoints = undefined;
 
 function distance(point, x, y) {
 	return Math.sqrt((point.x - x) * (point.x - x) + (point.y - y) * (point.y - y));
-
-
 }
 
 
-
-
-
-
 function getPointUnderCursor(x, y) {
-	var pointCurrent = null;
-	var d = mouseInteractionThesholdDistance;
+	let pointCurrent = null;
+	let d = mouseInteractionThesholdDistance;
 
-	for (var point of points) {
-
+	for (const point of points) {
 		if (distance(point, x, y) <= d) {
 			d = distance(point, x, y);
 			pointCurrent = point;
@@ -436,22 +365,13 @@ function getPointUnderCursor(x, y) {
 
 
 
-
-
-
-
-
-
 var pointCurrent = undefined;
 var pointMoving;
 
 
 
 $(document).ready(function () {
-
-	var canvas = document.getElementById("canvas");
-
-
+	const canvas = document.getElementById("canvas");
 
 	canvas.onmousedown = function (e) {
 		mouseButtonDown = true;
@@ -498,16 +418,8 @@ $(document).ready(function () {
 				pointCurrent = newpointCurrent;
 				draw();
 			}
-
-
-
 		}
 		else {
-
-
-
-
-
 			if (mouseInteraction == MOUSEINTERATION_MOVEPOINT) {
 				if (pointCurrent == null)
 					return;
@@ -538,18 +450,11 @@ $(document).ready(function () {
 				pointCurrent = null;
 				whenmodifiedquick();
 			}
-
-
-
 		}
 		else if (mouseInteraction == MOUSEINTERATION_DRAW) {
 			var pointAlreadyHere = getPointUnderCursor(pos.x, pos.y);
-
-
-
-
 			if ((pointAlreadyHere == null) && (distance(mouseInteractionDrawPoint1, pos.x, pos.y) <= 0.5)) {
-				tikzcodeAddLine('\\node[draw, circle] (' + getTikzcodeNewLabel() + ') at ' + getTikzcodeFromPoint(mouseInteractionDrawPoint1) + " {};");
+				tikzcodeAddLine('\\node (' + getTikzcodeNewLabel() + ') at ' + getTikzcodeFromPoint(mouseInteractionDrawPoint1) + " {};");
 				whenmodifiedquick();
 			}
 			else {
@@ -580,14 +485,8 @@ $(document).ready(function () {
 			}
 
 		}
-
-
 		mouseInteraction = MOUSEINTERATION_NONE;
-
-
 	}
-
-
 
 	canvas.ondblclick = function (e) {
 		var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePos(canvas, e));
@@ -597,67 +496,48 @@ $(document).ready(function () {
 			whenmodified();
 		}
 		else {
-			$('#code').focus();
+			editor.focus();
 
 		}
-
-
-
 	}
-
-
-
 	whenmodified();
-
-
 }
 );
 
-
-
-
-
-
-
+/*
 function selectBracket() {
 	var i = $('#code')[0].selectionStart;
-	var code = $('#code').val();
+	var code = getCode();
 
 	var posbegin = code.indexOf('[', i - 30);
 	var posend = code.indexOf(']', i);
 
 	$('#code')[0].selectionStart = posbegin;
 	$('#code')[0].selectionEnd = posend + 1;
-}
+}*/
 
 
 function tikzcodeCoordinatesSelect(point) {
-	$('#code')[0].selectionStart = point.posbegin;
-	$('#code')[0].selectionEnd = point.posend + 1;
+	editor.selection.setRange({
+		start: editor.session.doc.indexToPosition(point.posbegin),
+		end: editor.session.doc.indexToPosition(point.posend + 1 )
+	})
 }
 
 function tikzcodeAddLine(line) {
-	var code = $('#code').val();
-	var i = code.indexOf('\\end{tikzpicture}');
-
+	const code = getCode();
+	const i = code.indexOf('\\end{tikzpicture}');
 	if (i < 0)
 		code = code + "\n" + line;
 	else {
 		code = code.substring(0, i) + '\n' + line + '\n' + '\\end{tikzpicture}';
-
-
 	}
-
-	$('#code').val(code);
+	setCode(code);
 }
 
 
-function replaceIt(txtarea, newtxt) {
-	$(txtarea).val(
-		$(txtarea).val().substring(0, txtarea.selectionStart) +
-		newtxt +
-		$(txtarea).val().substring(txtarea.selectionEnd)
-	);
+function replaceIt(newtxt) {
+	editor.session.replace(editor.selection.getRange(), newtxt);
 }
 
 
@@ -690,7 +570,5 @@ function getTikzcodeFromCoordinates(point) {
 
 
 function tikzcodeSelectionReplaceCoordinates(point) {
-	replaceIt($("#code")[0], getTikzcodeFromCoordinates(point));
+	replaceIt(getTikzcodeFromCoordinates(point));
 }
-
-

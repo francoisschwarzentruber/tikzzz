@@ -4,61 +4,36 @@ session_start(); // Création de la session
 ?>
 
 <html>
-  <head>
-    <title></title>
-    <meta content="">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" type="text/css" href="style.css">
-     <script src="js/jquery-1.11.0.min.js" type="text/javascript"></script>
-    <script src="js/main.js" type="text/javascript"></script>
-    <script src="js/gui.js" type="text/javascript"></script>
-  </head>
-  <body>
-  
-  <h1>Tikzzz: Tikz diagram online editor</h1>
-  <table>
-  
-  <tr>
-  <td>
-  
-  
-  <img id="imgStatus" height=32px/></br>
-  <textarea autofocus id="code" rows= 40 cols=50 onkeydown="whenmodified()">
-  \begin{tikzpicture}
-       \tikzstyle{etat} = [draw, fill=white];
-	\node[etat, initial left, initial text={}, text width=3cm] (a) at (0, 0) {$\mathsf{a}$ : attente d'une pièce de monnaie };
-	\node[etat, text width=2.3cm] (s)  at (0, -2) {$\mathsf{s}$ : selection d'une boisson };
-	\node[etat] (c1)  at (-4, -2) {$\mathsf{e}$ : eau minérale };
-	\node[etat] (c2)  at (4, -2) {$\mathsf{j}$ : jus d'orange };
-	\draw[->] (a) edge[loop above] (a);
-	\draw[->] (s) edge[loop below] (s);
-	\draw[->] (a) -- (s);
-	\draw[->] (s) -- (c1);
-	\draw[->] (s) -- (c2);
-	\draw[->] (c1) edge[bend right=-10] (a);
-	\draw[->] (c2) edge[bend right=10] (a);
-   \end{tikzpicture}
-  </textarea>
-  
-  
-  
-  </td>
-  
-  <td>
-<button id="buttonDownload" onclick="download()">❤️ Download</button>
-<button id="buttonModeSelection" class="active" onclick="modeselection()">✋ Select</button>
-<button id="buttonModeDraw" onclick="modedraw()">✎ Draw</button></br>
-  <canvas id="canvas" width=800 height=600/>
-  </td>
-  
-  </tr>
-  
-  
-  
-  </table> 
-  
-  
-  
-  
-  </body>
+
+<head>
+  <title></title>
+  <meta content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.12.3/src-noconflict/ace.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="js/jquery-1.11.0.min.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+  <div class="toolbar">
+  Tikzzz: Tikz diagram online editor <span><img id="imgStatus" height=32px /></span>
+    <span style="left:50%">
+      <button id="buttonDownload" onclick="download()">❤️ Download</button>
+      <button id="buttonModeSelection" class="active" onclick="modeselection()">✋ Select</button>
+      <button id="buttonModeDraw" onclick="modedraw()">✎ Draw</button>
+</span>
+  </div>
+  <div>
+    <div id="code"></div>
+    <canvas id="canvas" width=800 height=600 />
+
+  </div>
+
+
+  <script src="js/gui.js" type="text/javascript"></script>
+  <script src="js/main.js" type="text/javascript"></script>
+
+</body>
+
 </html>
