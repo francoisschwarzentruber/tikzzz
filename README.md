@@ -8,7 +8,8 @@ tikzzz is a tiny tikz editor in the browser.
 
 ## Screenshot
 
-<img src="screenshot.png"/>
+![image](https://user-images.githubusercontent.com/43071857/204097889-28da69a8-6b9d-416c-9e96-096dbdadaf92.png)
+
 
 ## Requirements
 
