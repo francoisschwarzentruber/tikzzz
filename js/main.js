@@ -1,24 +1,53 @@
-var grid = 0.5;
-var phperror;
-var isaskedcompiling = false;
-var compiletimer = null;
+const MAXCOORDDEFAULT = 10;
+const grid = 0.5;
+let isaskedcompiling = false;
+let compiletimer = null;
 
 
 
 
 
-
+/**
+ * 
+ * @param {*} code 
+ * @returns the code + extra tikz code with empty nodes for calibrating the canvas
+ */
 function getTikzCodeWithBoundingBox(code) {
+	const points = getPointsFromTikz(code);
+
+	let xmin = -MAXCOORDDEFAULT;
+	let xmax = MAXCOORDDEFAULT;
+	let ymin = -MAXCOORDDEFAULT;
+	let ymax = MAXCOORDDEFAULT;
+
+	for (const point of points) {
+		xmin = Math.min(point.x, xmin);
+		xmax = Math.max(point.x, xmax);
+		ymin = Math.min(point.y, ymin);
+		ymax = Math.max(point.y, ymax);
+	}
+
+	const maxcoord = Math.max(Math.abs(xmin), Math.abs(ymin), Math.abs(xmax), Math.abs(ymax));
+	xmin = -maxcoord;
+	ymin = -maxcoord;
+	xmax = maxcoord;
+	ymax = maxcoord;
+
 	const i = code.indexOf('\\end{tikzpicture}');
 	if (i < 0)
 		return code;
 	else {
-		code = code.substring(0, i) + '\\node at (-10, -10) {};\n\\node at (10, 10) {};\n' + '\\end{tikzpicture}';
+		code = code.substring(0, i) + `\\node at (${xmin}, ${ymin}) {};\n\\node at (${xmax}, ${ymax}) {};\n` + '\\end{tikzpicture}';
+		console.log(code)
 		return code;
 	}
 }
 
 
+/**
+ * 
+ * @returns a new fresh tikz label
+ */
 function getTikzcodeNewLabel() {
 	const code = getCode();
 	for (let i = 0; i < 5000; i++) {
@@ -31,13 +60,13 @@ function getTikzcodeNewLabel() {
 
 
 const phpcompileURL = "tikz.php";   //"http://127.0.0.1/servertikzzz/tikz.php"; //"tikz.php";
-var lastSVGfile = undefined;
+let lastSVGfile = undefined;
 
 
 function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 	gui_compiling();
 	console.log("compile");
-	var code = getCode();
+	let code = getCode();
 
 	if (trueiffinalversiontodownload == undefined)
 		trueiffinalversiontodownload = false;
@@ -56,12 +85,12 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 				console.log("success with the message: " + response);
 				isaskedcompiling = false;
 			}
-			var d = new Date();
+			const d = new Date();
 
 			const lines = response.split("\n");
 			lastSVGfile = lines[lines.length - 1] + ".svg?" + d.getTime();
 
-			var imgToLoad = new Image();
+			const imgToLoad = new Image();
 
 
 			if (!trueiffinalversiontodownload) {
@@ -87,16 +116,15 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 		},
 
 		error: function (resultat, statut, erreur) {
-			phperror = resultat;
 			gui_error();
-			alert("il y a une erreur : " + resultat + statut + erreur);
+			alert("there is an error: " + resultat + statut + erreur);
 		}
 
 	});
 }
 
 
-var points = new Array();
+let points = new Array();
 
 
 function whenmodified() {
@@ -122,8 +150,15 @@ function whenmodifiedquick() {
 }
 
 
-
-function getPointsFromTikz(str) {
+/**
+ * 
+ * @param {*} code tikz code
+ * @returns an array containing the list of points, i.e. coordinates that appear in the tikz code
+ * Each point is {x, y, posbegin, posend, name} where (x, y) are the coordinates, posbegin, posend are the index positions in the tikz
+ * code
+ * name = the name of the corresponding node if there is one
+ */
+function getPointsFromTikz(code) {
 	const points = new Array();
 	let counter = 0;
 	let name = undefined;
@@ -131,24 +166,24 @@ function getPointsFromTikz(str) {
 	console.log("getPointsFromTikz");
 	let i = 0;
 	while (i >= 0) {
-		i = str.indexOf("(", i);
+		i = code.indexOf("(", i);
 
 		if (i >= 0) {
-			var icomma = str.indexOf(",", i);
-			var iend = str.indexOf(")", i);
+			var icomma = code.indexOf(",", i);
+			var iend = code.indexOf(")", i);
 
 
-			const n1 = str.substring(i + 1, icomma);
-			const n2 = str.substring(icomma + 1, iend);
+			const n1 = code.substring(i + 1, icomma);
+			const n2 = code.substring(icomma + 1, iend);
 
 			if ((i < iend) && ((iend < icomma) || (icomma < i))) {
 				iname = i;
-				name = str.substring(i + 1, iend);
+				name = code.substring(i + 1, iend);
 				console.log(name);
 			}
 			if ((i < icomma) && (icomma < iend) && (parseFloat(n1) != NaN) && (parseFloat(n2) != NaN)) {
 				if (name != undefined) {
-					if (!((i - (iname + name.length) < 10) && str.substring(iname + name.length, i).indexOf("at") >= 0))
+					if (!((i - (iname + name.length) < 10) && code.substring(iname + name.length, i).indexOf("at") >= 0))
 						name = undefined;
 				}
 
@@ -171,64 +206,59 @@ function getPointsFromTikz(str) {
 
 
 
-function drawPoint(ctx, point) {
-	var crosssize = 5 / scaleratio;
-	ctx.beginPath();
-	ctx.moveTo(point.x - crosssize, point.y - crosssize);
-	ctx.lineTo(point.x + crosssize, point.y + crosssize);
-	ctx.stroke();
-
-	ctx.beginPath();
-	ctx.moveTo(point.x - crosssize, point.y + crosssize);
-	ctx.lineTo(point.x + crosssize, point.y - crosssize);
-	ctx.stroke();
-}
 
 
-var img = null;
-var boundedbox;
-var maxcoord = 10;
-var scaleratio;
+
+let img = null;
+let boundedbox;
+let scaleratio;
 
 
-function drawGrid(ctx) {
-	ctx.beginPath();
-	ctx.strokeStyle = "#CCCCCC";
-	ctx.lineWidth = 0.8 / scaleratio;
 
-	for (var ix = -50; ix < 50; ix++) {
-		ctx.moveTo(ix * grid, -20);
-		ctx.lineTo(ix * grid, 20);
-
-		ctx.moveTo(-20, ix * grid);
-		ctx.lineTo(20, ix * grid);
-
-	}
-
-
-	ctx.stroke();
-}
-
-
-function drawLines(ctx, points) {
-	ctx.beginPath();
-	ctx.strokeStyle = "#888888";
-	ctx.lineWidth = 1 / scaleratio;
-
-	ctx.moveTo(points[0].x, points[0].y);
-
-	for (let i = 1; i < points.length; i++)
-		ctx.lineTo(points[i].x, points[i].y);
-
-	ctx.stroke();
-}
 
 
 
 function draw() {
+	function drawGrid(ctx) {
+		ctx.beginPath();
+		ctx.strokeStyle = "#CCCCCC";
+		ctx.lineWidth = 0.8 / scaleratio;
+		for (let ix = -50; ix < 50; ix++) {
+			ctx.moveTo(ix * grid, -20);
+			ctx.lineTo(ix * grid, 20);
+			ctx.moveTo(-20, ix * grid);
+			ctx.lineTo(20, ix * grid);
+		}
+		ctx.stroke();
+	}
+
+	function drawPoint(ctx, point) {
+		var crosssize = 5 / scaleratio;
+		ctx.beginPath();
+		ctx.moveTo(point.x - crosssize, point.y - crosssize);
+		ctx.lineTo(point.x + crosssize, point.y + crosssize);
+		ctx.stroke();
+
+		ctx.beginPath();
+		ctx.moveTo(point.x - crosssize, point.y + crosssize);
+		ctx.lineTo(point.x + crosssize, point.y - crosssize);
+		ctx.stroke();
+	}
+
+	function drawLines(ctx, polylinePoints) {
+		ctx.beginPath();
+		ctx.strokeStyle = "#888888";
+		ctx.lineWidth = 1 / scaleratio;
+		ctx.moveTo(polylinePoints[0].x, polylinePoints[0].y);
+		for (let i = 1; i < polylinePoints.length; i++)
+			ctx.lineTo(polylinePoints[i].x, polylinePoints[i].y);
+
+		ctx.stroke();
+	}
+
 	//console.log("draw"); 
-	var canvas = document.getElementById("canvas");
-	var ctx = canvas.getContext("2d");
+	const canvas = document.getElementById("canvas");
+	const ctx = canvas.getContext("2d");
 
 	if (img == null) return;
 	if (!img.complete) return;
@@ -237,23 +267,24 @@ function draw() {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 		if (img != null)
-			boundedbox = img.width / 2;
+			boundedbox = canvas.width / 2;
 
+		const maxcoord = Math.max(MAXCOORDDEFAULT, Math.max(...getPointsFromTikz(getCode()).map((p) => Math.max(Math.abs(p.x), Math.abs(p.y)))));
 		scaleratio = boundedbox / maxcoord;
 
 
 		if (img != null && img != undefined)
 			if (img.complete)
-				ctx.drawImage(img, 0, 0);//, 0, 0, img.width, img.height);
+				ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
 
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 		ctx.save();
 		ctx.translate(boundedbox, boundedbox);
 		ctx.scale(scaleratio, -scaleratio);
 
+		console.log("maxcoord: " + maxcoord)
 
 		drawGrid(ctx);
-
 
 		ctx.strokeStyle = "#FF0000";
 
@@ -282,6 +313,7 @@ function draw() {
 		ctx.restore();
 		ctx.save();
 		ctx.translate(boundedbox, boundedbox);
+		// /!\ we can not make ctx.scale(scaleratio, -scaleratio); because the text would be vertically mirrored
 		ctx.scale(scaleratio, scaleratio);
 
 		ctx.lineWidth = 1 / scaleratio;
@@ -345,9 +377,7 @@ let mouseInteraction = 0;
 let mouseInteractionDrawPoint1 = undefined;
 let mouseInteractionDrawPoints = undefined;
 
-function distance(point, x, y) {
-	return Math.sqrt((point.x - x) * (point.x - x) + (point.y - y) * (point.y - y));
-}
+function distance(point, x, y) { return Math.sqrt((point.x - x) * (point.x - x) + (point.y - y) * (point.y - y)); }
 
 
 function getPointUnderCursor(x, y) {
@@ -365,8 +395,8 @@ function getPointUnderCursor(x, y) {
 
 
 
-var pointCurrent = undefined;
-var pointMoving;
+let pointCurrent = undefined;
+let pointMoving;
 
 
 
@@ -534,9 +564,6 @@ function tikzcodeAddLine(line) {
 	}
 	setCode(code);
 }
-
-
-
 
 
 
