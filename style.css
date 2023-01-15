@@ -1,5 +1,3 @@
-
-
 tr {
 	vertical-align: top;
 }
@@ -108,7 +106,7 @@ input.visible {
 #code {
 	width: 50%;
 	top: 60px;
-	position:absolute;
+	position: absolute;
 	bottom: 0px;
 	left: 0;
 }
@@ -116,16 +114,28 @@ input.visible {
 
 .toolbar {
 	width: 100%;
-	height:40px;
+	height: 40px;
 }
 
 .toolbar span {
-	position:absolute;
+	position: absolute;
+}
+
+
+#output {
+	position: absolute;
+	top: 60px;
+	left: 50%;
+	width: 50%;
+}
+
+#outputimg {
+	position: absolute;
+	width: 100%;
 }
 
 
 canvas {
 	position: absolute;
-	top: 60px;
-	left: 50%
+	width: 100%;
 }

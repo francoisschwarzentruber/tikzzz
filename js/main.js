@@ -1,9 +1,7 @@
 const MAXCOORDDEFAULT = 10;
-const grid = 0.5;
+const GRIDSPACING = 0.5;
 let isaskedcompiling = false;
 let compiletimer = null;
-
-
 
 
 
@@ -37,7 +35,12 @@ function getTikzCodeWithBoundingBox(code) {
 	if (i < 0)
 		return code;
 	else {
-		code = code.substring(0, i) + `\\node at (${xmin}, ${ymin}) {};\n\\node at (${xmax}, ${ymax}) {};\n` + '\\end{tikzpicture}';
+		code = code.substring(0, i);
+		for (let x = xmin; x <= xmax; x++)
+			for (let y = ymin; y <= ymax; y++)
+				code += `\\node[draw, inner sep = 0mm] at (${x}, ${y}) {};`;
+		//code += `\\node at (${xmin}, ${ymin}) {};\n\\node at (${xmax}, ${ymax}) {};\n` + '\\end{tikzpicture}';
+		code += '\\end{tikzpicture}';
 		console.log(code)
 		return code;
 	}
@@ -90,7 +93,7 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 			const lines = response.split("\n");
 			lastSVGfile = lines[lines.length - 1] + ".svg?" + d.getTime();
 
-			const imgToLoad = new Image();
+			const imgToLoad = document.getElementById("outputimg");//new Image();
 
 
 			if (!trueiffinalversiontodownload) {
@@ -187,7 +190,6 @@ function getPointsFromTikz(code) {
 						name = undefined;
 				}
 
-				console.log(name);
 				points.push({ x: parseFloat(n1), y: parseFloat(n2), posbegin: i, posend: iend, name: name });
 			}
 		}
@@ -224,10 +226,10 @@ function draw() {
 		ctx.strokeStyle = "#CCCCCC";
 		ctx.lineWidth = 0.8 / scaleratio;
 		for (let ix = -50; ix < 50; ix++) {
-			ctx.moveTo(ix * grid, -20);
-			ctx.lineTo(ix * grid, 20);
-			ctx.moveTo(-20, ix * grid);
-			ctx.lineTo(20, ix * grid);
+			ctx.moveTo(ix * GRIDSPACING, -20);
+			ctx.lineTo(ix * GRIDSPACING, 20);
+			ctx.moveTo(-20, ix * GRIDSPACING);
+			ctx.lineTo(20, ix * GRIDSPACING);
 		}
 		ctx.stroke();
 	}
@@ -270,25 +272,24 @@ function draw() {
 			boundedbox = canvas.width / 2;
 
 		const maxcoord = Math.max(MAXCOORDDEFAULT, Math.max(...getPointsFromTikz(getCode()).map((p) => Math.max(Math.abs(p.x), Math.abs(p.y)))));
+		console.log("maxcoord:" + maxcoord);
 		scaleratio = boundedbox / maxcoord;
 
 
-		if (img != null && img != undefined)
-			if (img.complete)
-				ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+
 
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 		ctx.save();
 		ctx.translate(boundedbox, boundedbox);
 		ctx.scale(scaleratio, -scaleratio);
-
+		console.log("scaleratio: " + scaleratio)
 		console.log("maxcoord: " + maxcoord)
 
 		drawGrid(ctx);
 
 		ctx.strokeStyle = "#FF0000";
 
-		for (var point of points) {
+		for (const point of points) {
 			if (pointCurrent == point && mouseInteraction != MOUSEINTERATION_MOVEPOINT)
 				ctx.lineWidth = 5 / scaleratio;
 			else
@@ -336,16 +337,10 @@ function draw() {
 
 
 
-
-
-
-
-
-
 /*getCoordinatesFromPixelCoordinates({x: 300, y: 300})
  * */
 function getCoordinatesFromPixelCoordinatesGrid(p) {
-	return { x: Math.round(((p.x - boundedbox) / scaleratio) / grid) * grid, y: -Math.round(((p.y - boundedbox) / scaleratio) / grid) * grid };
+	return { x: Math.round(((p.x - boundedbox) / scaleratio) / GRIDSPACING) * GRIDSPACING, y: -Math.round(((p.y - boundedbox) / scaleratio) / GRIDSPACING) * GRIDSPACING };
 }
 
 
