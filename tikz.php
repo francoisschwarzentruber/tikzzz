@@ -1,35 +1,5 @@
  <?php
 
-  /*
-input:
-- filename: a filename (with directory information, with extension)
-output: the content of the file filename as a string
-*/
-  function fileread($filename)
-  {
-    $handle = fopen($filename, "r");
-    $str = fread($handle, filesize($filename));
-    fclose($handle);
-
-    return $str;
-  }
-
-
-  /*
-input:
-- filename: a filename (with directory information, with extension)
-- data: a string
-
-WRITE the content data in the file filename
-*/
-  function filewrite($filename, $data)
-  {
-    $handle = fopen($filename, 'w');
-    fwrite($handle, $data);
-    fclose($handle);
-  }
-
-
   /**
    * Execute a command and kill it if the timeout limit fired to prevent long php execution
    * 
@@ -98,7 +68,7 @@ output: compile the file and generate a pdf and an image .png of the pdf
       if (!file_exists("$latexfilename.log")) {
         echo ("no .log file\n");
       }
-      echo fileread("$latexfilename.log");
+      echo file_get_contents("$latexfilename.log");
     }
     chdir("..");
   }
@@ -109,7 +79,7 @@ output: the code of a document containing the exercice and such that the result 
 */
   function getLaTEXCodeFromOneTikzCrop($latexcode)
   {
-    $str = fileread("latexheader.tex") . "\\begin{document}\n";
+    $str = file_get_contents("latexheader.tex") . "\\begin{document}\n";
     $str .= $latexcode;
     $str .= "\n\n \\end{document}";
     return $str;
@@ -125,7 +95,8 @@ return the name of the file (without directory information and without extension
   function producedottex($latexcode, $latexfilename)
   {
     $mytmpfile = "tmp/$latexfilename.tex";
-    filewrite($mytmpfile, getLaTEXCodeFromOneTikzCrop($latexcode));
+    $finalCode = getLaTEXCodeFromOneTikzCrop($latexcode);
+    file_put_contents($mytmpfile, $finalCode);
   }
 
 
@@ -137,14 +108,10 @@ return the name of the file (without directory information and without extension
 
   set_time_limit(2);
 
-
-
   if (!isset($code)) {
     echo "no code was given : $code";
     exit;
   }
-
-
 
   if ($trueiffinalversiontodownload != "true") {
     $latexfilename = "tmp$id";
@@ -154,5 +121,5 @@ return the name of the file (without directory information and without extension
   producedottex($code, $latexfilename);
   compileAndGenerateImage($latexfilename);
 
-  echo ("tmp/$latexfilename");
+  echo ("\ntmp/$latexfilename");
   ?>

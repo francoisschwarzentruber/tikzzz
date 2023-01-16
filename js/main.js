@@ -40,7 +40,6 @@ function getTikzCodeWithBoundingBox(code) {
 			for (let y = ymin; y <= ymax; y++)
 				code += `\\node[draw, inner sep = 0mm] at (${x}, ${y}) {};`;*/
 		code += `\\node at (${xmin}, ${ymin}) {};\n\\node at (${xmax}, ${ymax}) {};\n` + '\\end{tikzpicture}';
-		code += '\\end{tikzpicture}';
 		console.log(code)
 		return code;
 	}
@@ -79,8 +78,6 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 		trueiffinalversiontodownload = false;
 
 	const code = trueiffinalversiontodownload ? getCode() : getTikzCodeWithBoundingBox(getCode());
-
-
 
 	$.ajax({
 		type: "POST",
