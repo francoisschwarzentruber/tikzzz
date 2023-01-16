@@ -47,6 +47,46 @@
 
 
 
+
+
+
+  /**
+   * @returns whether a file is old, i.e. more than 20sec!
+   */
+  function is_old_file($file)
+  {
+    return filemtime($file) < time() - 20;
+  }
+
+
+
+  /**
+   * @returns true if $haystack finishes with $needle
+   */
+  function endsWith($haystack, $needle)
+  {
+    $length = strlen($needle);
+    if (!$length) {
+      return true;
+    }
+    return substr($haystack, -$length) === $needle;
+  }
+
+
+
+  /**
+   * remove too old files
+   */
+  function clean()
+  {
+    $files = glob('*'); // get all file names
+    foreach ($files as $file) { // iterate files
+      if (is_file($file) && is_old_file($file) && (endsWith($file, ".log") || endsWith($file, ".tex") || endsWith($file, ".pdf") || endsWith($file, ".aux"))) {
+        unlink($file); // delete file
+      }
+    }
+  }
+
   $trueiffinalversiontodownload = false;
 
 
@@ -70,6 +110,9 @@ output: compile the file and generate a pdf and an image .png of the pdf
       }
       echo file_get_contents("$latexfilename.log");
     }
+
+    clean();
+    
     chdir("..");
   }
 
@@ -94,7 +137,7 @@ return the name of the file (without directory information and without extension
 */
   function producedottex($latexcode, $latexfilename)
   {
-    
+
     $mytmpfile = "tmp/$latexfilename.tex";
     $finalCode = getLaTEXCodeFromOneTikzCrop($latexcode);
     file_put_contents($mytmpfile, $finalCode);
