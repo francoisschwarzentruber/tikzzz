@@ -326,7 +326,10 @@ function draw() {
 /*getCoordinatesFromPixelCoordinates({x: 300, y: 300})
  * */
 function getCoordinatesFromPixelCoordinatesGrid(p) {
-	return { x: Math.round(((p.x - boundedbox) / scaleratio) / GRIDSPACING) * GRIDSPACING, y: -Math.round(((p.y - boundedbox) / scaleratio) / GRIDSPACING) * GRIDSPACING };
+	return {
+		x: Math.round(((p.x - boundedbox) / scaleratio) / GRIDSPACING) * GRIDSPACING,
+		y: -Math.round(((p.y - boundedbox) / scaleratio) / GRIDSPACING) * GRIDSPACING
+	};
 }
 
 
@@ -342,8 +345,8 @@ const mouseInteractionThesholdDistance = 0.5;
 function getMousePos(canvas, evt) {
 	const rect = canvas.getBoundingClientRect();
 	return {
-		x: evt.clientX - rect.left,
-		y: evt.clientY - rect.top
+		x: (evt.clientX - rect.left) * 800 / rect.width,
+		y: (evt.clientY - rect.top) * 600 / rect.height
 	};
 }
 

@@ -18,7 +18,7 @@ On Ubuntu, install `php7.2-cli` package:
 $ sudo apt install php7.2-cli
 ```
 
-Install also pdf2svg.
+Install also pdf2svg, texlive, 
 
 ## How to launch it?
 
