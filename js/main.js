@@ -36,10 +36,10 @@ function getTikzCodeWithBoundingBox(code) {
 		return code;
 	else {
 		code = code.substring(0, i);
-		for (let x = xmin; x <= xmax; x++)
+		/**for (let x = xmin; x <= xmax; x++)
 			for (let y = ymin; y <= ymax; y++)
-				code += `\\node[draw, inner sep = 0mm] at (${x}, ${y}) {};`;
-		//code += `\\node at (${xmin}, ${ymin}) {};\n\\node at (${xmax}, ${ymax}) {};\n` + '\\end{tikzpicture}';
+				code += `\\node[draw, inner sep = 0mm] at (${x}, ${y}) {};`;*/
+		code += `\\node at (${xmin}, ${ymin}) {};\n\\node at (${xmax}, ${ymax}) {};\n` + '\\end{tikzpicture}';
 		code += '\\end{tikzpicture}';
 		console.log(code)
 		return code;
@@ -66,16 +66,21 @@ const phpcompileURL = "tikz.php";   //"http://127.0.0.1/servertikzzz/tikz.php"; 
 let lastSVGfile = undefined;
 
 
+/**
+ * 
+ * @param {*} trueiffinalversiontodownload 
+ * @param {*} callBackIfSuccess 
+ */
 function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 	gui_compiling();
 	console.log("compile");
-	let code = getCode();
 
 	if (trueiffinalversiontodownload == undefined)
 		trueiffinalversiontodownload = false;
 
-	if (trueiffinalversiontodownload != true)
-		code = getTikzCodeWithBoundingBox(code);
+	const code = trueiffinalversiontodownload ? getCode() : getTikzCodeWithBoundingBox(getCode());
+
+
 
 	$.ajax({
 		type: "POST",
@@ -93,34 +98,31 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 			const lines = response.split("\n");
 			lastSVGfile = lines[lines.length - 1] + ".svg?" + d.getTime();
 
-			const imgToLoad = document.getElementById("outputimg");//new Image();
 
 
-			if (!trueiffinalversiontodownload) {
-				img = imgToLoad;
-			}
-
-			imgToLoad.src = lastSVGfile;
-			console.log("img to load : " + lastSVGfile)
-
-			imgToLoad.onload = function () {
-				console.log("new img loaded");
-				gui_compilesuccess();
-
-				if (!trueiffinalversiontodownload)
-					draw();
-				else
+			if (trueiffinalversiontodownload) {
+				const img = new Image();
+				img.src = lastSVGfile;
+				img.onload = function () {
+					gui_compilesuccess();
 					callBackIfSuccess();
-			};
-
-			img.onerror = function () {
-				gui_error();
+				};
+				img.onerror = function () { gui_error(); }
+			}
+			else {
+				const img = document.getElementById("outputimg");//new Image();
+				img.src = lastSVGfile;
+				img.onload = function () {
+					gui_compilesuccess();
+					draw();
+				};
+				img.onerror = function () { gui_error(); }
 			}
 		},
 
-		error: function (resultat, statut, erreur) {
+		error: function (result, statut, error) {
 			gui_error();
-			alert("there is an error: " + resultat + statut + erreur);
+			alert("there is an error: " + result + statut + error);
 		}
 
 	});
@@ -207,11 +209,6 @@ function getPointsFromTikz(code) {
 
 
 
-
-
-
-
-let img = null;
 let boundedbox;
 let scaleratio;
 
@@ -262,21 +259,14 @@ function draw() {
 	const canvas = document.getElementById("canvas");
 	const ctx = canvas.getContext("2d");
 
-	if (img == null) return;
-	if (!img.complete) return;
-
 	try {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-		if (img != null)
-			boundedbox = canvas.width / 2;
+		boundedbox = canvas.width / 2;
 
 		const maxcoord = Math.max(MAXCOORDDEFAULT, Math.max(...getPointsFromTikz(getCode()).map((p) => Math.max(Math.abs(p.x), Math.abs(p.y)))));
 		console.log("maxcoord:" + maxcoord);
 		scaleratio = boundedbox / maxcoord;
-
-
-
 
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 		ctx.save();
@@ -309,7 +299,6 @@ function draw() {
 			drawLines(ctx, mouseInteractionDrawPoints);
 
 		}
-
 
 		ctx.restore();
 		ctx.save();
