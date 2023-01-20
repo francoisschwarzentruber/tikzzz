@@ -30,7 +30,7 @@ session_start(); // Création de la session
     <div id="code"></div>
     <div id="output">
       <img id="outputimg"></img>
-      <canvas id="canvas" width=800 height=600 />
+      <canvas id="canvas" width=800 height=800 />
     </div>
   </div>
 

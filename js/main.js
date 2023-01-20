@@ -5,6 +5,7 @@ let compiletimer = null;
 
 
 
+
 /**
  * 
  * @param {*} code 
@@ -25,20 +26,18 @@ function getTikzCodeWithBoundingBox(code) {
 		ymax = Math.max(point.y, ymax);
 	}
 
+	const smallScale = 1;
 	const maxcoord = Math.max(Math.abs(xmin), Math.abs(ymin), Math.abs(xmax), Math.abs(ymax));
-	xmin = -maxcoord;
-	ymin = -maxcoord;
-	xmax = maxcoord;
-	ymax = maxcoord;
+	xmin = -maxcoord*smallScale;
+	ymin = -maxcoord*smallScale;
+	xmax = maxcoord*smallScale;
+	ymax = maxcoord*smallScale;
 
 	const i = code.indexOf('\\end{tikzpicture}');
 	if (i < 0)
 		return code;
 	else {
 		code = code.substring(0, i);
-		/**for (let x = xmin; x <= xmax; x++)
-			for (let y = ymin; y <= ymax; y++)
-				code += `\\node[draw, inner sep = 0mm] at (${x}, ${y}) {};`;*/
 		code += `\\node at (${xmin}, ${ymin}) {};\n\\node at (${xmax}, ${ymax}) {};\n` + '\\end{tikzpicture}';
 		console.log(code)
 		return code;
@@ -149,7 +148,7 @@ function askForCompilation(durationWait) {
 
 
 function whenmodified() { askForCompilation(1000); }
-function whenmodifiedquick() { askForCompilation(0);}
+function whenmodifiedquick() { askForCompilation(0); }
 
 
 /**
@@ -206,7 +205,7 @@ function getPointsFromTikz(code) {
 
 
 
-let boundedbox;
+let boundedBoxHalfSize;
 let scaleratio;
 
 
@@ -217,13 +216,17 @@ let scaleratio;
 function draw() {
 	function drawGrid(ctx) {
 		ctx.beginPath();
-		ctx.strokeStyle = "#CCCCCC";
+		ctx.strokeStyle = "#DDDDDD";
 		ctx.lineWidth = 0.8 / scaleratio;
-		for (let ix = -50; ix < 50; ix++) {
-			ctx.moveTo(ix * GRIDSPACING, -20);
-			ctx.lineTo(ix * GRIDSPACING, 20);
-			ctx.moveTo(-20, ix * GRIDSPACING);
-			ctx.lineTo(20, ix * GRIDSPACING);
+
+		function toGridSpacing(a) { return Math.floor(a*2)/2; }
+
+		const gridspacingDisplayed = toGridSpacing((boundedBoxHalfSize / scaleratio)/10);
+		for (let ix = -boundedBoxHalfSize; ix < boundedBoxHalfSize; ix+=gridspacingDisplayed) {
+			ctx.moveTo(ix * gridspacingDisplayed, -boundedBoxHalfSize);
+			ctx.lineTo(ix * gridspacingDisplayed, boundedBoxHalfSize);
+			ctx.moveTo(-boundedBoxHalfSize, ix * gridspacingDisplayed);
+			ctx.lineTo(boundedBoxHalfSize, ix * gridspacingDisplayed);
 		}
 		ctx.stroke();
 	}
@@ -259,15 +262,15 @@ function draw() {
 	try {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-		boundedbox = canvas.width / 2;
+		boundedBoxHalfSize = canvas.width / 2;
 
 		const maxcoord = Math.max(MAXCOORDDEFAULT, Math.max(...getPointsFromTikz(getCode()).map((p) => Math.max(Math.abs(p.x), Math.abs(p.y)))));
 		console.log("maxcoord:" + maxcoord);
-		scaleratio = boundedbox / maxcoord;
+		scaleratio = boundedBoxHalfSize / maxcoord;
 
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 		ctx.save();
-		ctx.translate(boundedbox, boundedbox);
+		ctx.translate(boundedBoxHalfSize, boundedBoxHalfSize);
 		ctx.scale(scaleratio, -scaleratio);
 		console.log("scaleratio: " + scaleratio)
 		console.log("maxcoord: " + maxcoord)
@@ -299,7 +302,7 @@ function draw() {
 
 		ctx.restore();
 		ctx.save();
-		ctx.translate(boundedbox, boundedbox);
+		ctx.translate(boundedBoxHalfSize, boundedBoxHalfSize);
 		// /!\ we can not make ctx.scale(scaleratio, -scaleratio); because the text would be vertically mirrored
 		ctx.scale(scaleratio, scaleratio);
 
@@ -327,26 +330,25 @@ function draw() {
  * */
 function getCoordinatesFromPixelCoordinatesGrid(p) {
 	return {
-		x: Math.round(((p.x - boundedbox) / scaleratio) / GRIDSPACING) * GRIDSPACING,
-		y: -Math.round(((p.y - boundedbox) / scaleratio) / GRIDSPACING) * GRIDSPACING
+		x: Math.round(((p.x - boundedBoxHalfSize) / scaleratio) / GRIDSPACING) * GRIDSPACING,
+		y: -Math.round(((p.y - boundedBoxHalfSize) / scaleratio) / GRIDSPACING) * GRIDSPACING
 	};
 }
 
 
 function getCoordinatesFromPixelCoordinates(p) {
-	return { x: ((p.x - boundedbox) / scaleratio), y: -((p.y - boundedbox) / scaleratio) };
+	return { x: ((p.x - boundedBoxHalfSize) / scaleratio), y: -((p.y - boundedBoxHalfSize) / scaleratio) };
 }
 
 
 
-const mouseInteractionThesholdDistance = 0.5;
 
 
 function getMousePos(canvas, evt) {
 	const rect = canvas.getBoundingClientRect();
 	return {
 		x: (evt.clientX - rect.left) * 800 / rect.width,
-		y: (evt.clientY - rect.top) * 600 / rect.height
+		y: (evt.clientY - rect.top) * 800 / rect.height
 	};
 }
 
@@ -366,7 +368,7 @@ function distance(point, x, y) { return Math.sqrt((point.x - x) * (point.x - x) 
 
 function getPointUnderCursor(x, y) {
 	let pointCurrent = null;
-	let d = mouseInteractionThesholdDistance;
+	let d = boundedBoxHalfSize * 0.0005;
 
 	for (const point of points) {
 		if (distance(point, x, y) <= d) {
