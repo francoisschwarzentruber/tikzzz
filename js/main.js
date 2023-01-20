@@ -562,26 +562,18 @@ function tikzcodeCoordinatesSelect(point) {
 }
 
 function tikzcodeAddLine(line) {
+	function editorInsert(str) {
+		const r = editor.selection.getRange();
+		editor.session.replace(r, str);
+	}
 	const currentLine = editor.session.getLine(editor.selection.getRange().start.row);
 	if (currentLine.trim() != "")
 		line = "\n   " + line;
 	editorInsert(line);
-	return
-	let code = getCode();
-	const i = code.indexOf('\\end{tikzpicture}');
-	if (i < 0)
-		code = code + "\n" + line;
-	else {
-		code = code.substring(0, i) + '\n' + line + '\n' + '\\end{tikzpicture}';
-	}
-	setCode(code);
 }
 
 
-function editorInsert(str) {
-	const r = editor.selection.getRange();
-	editor.session.replace(r, str);
-}
+
 
 
 function formatToAvoidUglyNumber(x) {

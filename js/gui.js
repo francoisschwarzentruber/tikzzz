@@ -44,7 +44,7 @@ function replaceIt(newtxt) { editor.session.replace(editor.selection.getRange(),
 function addInsertionButton(caption, code) {
       const b = document.createElement("button");
       b.innerHTML = caption;
-      b.onclick = () => { replaceIt(code); whenmodified(); editor.focus()};
+      b.onclick = () => { tikzcodeAddLine(code); whenmodified(); editor.focus()};
       b.title = "Insert " + code;
       toolbarInsert.appendChild(b);
 }
