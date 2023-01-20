@@ -17,8 +17,9 @@ session_start(); // Création de la session
 
 <body>
   <div class="toolbar">
-    Tikzzz: Tikz diagram online editor <span><img id="imgStatus" height=32px /></span>
+    Tikzzz: Tikz diagram online editor
     <span style="left:50%">
+      <img id="imgStatus" title="status of the compilation" height=16px />
       <button id="buttonDownload" onclick="download()">❤️ Download</button>
       <button id="buttonModeSelection" class="active" onclick="modeselection()">✋ Select</button>
       <button id="buttonModeDraw" onclick="modedraw()">✎ Draw</button>
@@ -31,8 +32,6 @@ session_start(); // Création de la session
       <img id="outputimg"></img>
       <canvas id="canvas" width=800 height=600 />
     </div>
-
-
   </div>
 
 

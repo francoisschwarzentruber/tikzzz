@@ -43,10 +43,14 @@ function replaceIt(newtxt) { editor.session.replace(editor.selection.getRange(),
 function addInsertionButton(caption, code) {
       const b = document.createElement("button");
       b.innerHTML = caption;
-      b.onclick = () => { replaceIt(code); whenmodified(); };
-      b.title = code;
+      b.onclick = () => { replaceIt(code); whenmodified(); editor.focus()};
+      b.title = "Insert " + code;
       toolbarInsert.appendChild(b);
 }
 
-addInsertionButton("node", "\\node at (1, 1) {};")
-addInsertionButton("⪧", "\\draw plot [smooth cycle] coordinates {(0, 0) (1, 0) (2, 2)};")
+addInsertionButton("node", "\\node (A) at (1, 1) {};")
+addInsertionButton("edge", "\\draw (A) edge (B);")
+addInsertionButton("loop", "\\draw (A) edge[loop, loop right] (A);")
+addInsertionButton("rectangle", "\\draw (1, 1) rectangle (2, 2);")
+addInsertionButton("ellipse", "\\draw (1, 1) ellipse (2cm and 1cm);")
+addInsertionButton("curve", "\\draw plot [smooth cycle] coordinates {(0, 0) (1, 0) (2, 2)};")

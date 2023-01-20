@@ -137,7 +137,6 @@ return the name of the file (without directory information and without extension
 */
   function producedottex($latexcode, $latexfilename)
   {
-
     $mytmpfile = "tmp/$latexfilename.tex";
     $finalCode = getLaTEXCodeFromOneTikzCrop($latexcode);
     file_put_contents($mytmpfile, $finalCode);

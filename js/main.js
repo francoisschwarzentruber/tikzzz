@@ -129,27 +129,27 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 let points = new Array();
 
 
-function whenmodified() {
+/**
+ * 
+ * @param {*} durationWait 
+ * @description ask to compile the image. The compilation will start in durationWait. meanwhile, it is possible that 
+ * the code is modified again... thus, we will cancel the compilation and wait for the new modification that will
+ * be incorporated
+ */
+function askForCompilation(durationWait) {
 	gui_wait();
 	console.log("whenmodified");
 	if (!isaskedcompiling) {
 		isaskedcompiling = true;
-		if (compiletimer != null) clearTimeout(compiletimer);
-		compiletimer = setTimeout(function () { compile(); points = getPointsFromTikz(getCode()); draw(); }, 1000);
+		if (compiletimer != null)
+			clearTimeout(compiletimer);
+		compiletimer = setTimeout(function () { compile(); points = getPointsFromTikz(getCode()); draw(); }, durationWait);
 	}
 }
 
-function whenmodifiedquick() {
-	gui_wait();
-	console.log("whenmodified");
-	if (!isaskedcompiling) {
-		isaskedcompiling = true;
-		if (compiletimer != null) clearTimeout(compiletimer);
-		compiletimer = setTimeout(compile, 0);
-	}
-	points = getPointsFromTikz(getCode());
-	draw();
-}
+
+function whenmodified() { askForCompilation(1000); }
+function whenmodifiedquick() { askForCompilation(0);}
 
 
 /**
