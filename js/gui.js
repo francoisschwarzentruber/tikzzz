@@ -31,6 +31,7 @@ const editor = ace.edit("code");
 editor.getSession().setUseWorker(false);
 editor.getSession().setMode("ace/mode/latex");
 replaceIt("\\begin{tikzpicture}\n   \n\\end{tikzpicture}")
+editor.gotoLine(2, 4); 
 
 function getCode() { return editor.getValue(); }
 function setCode(code) { editor.setValue(code); }

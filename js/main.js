@@ -67,7 +67,6 @@ function getTikzCodeWithBoundingBox(code) {
 	else {
 		code = code.substring(0, i);
 		code += `\\node at (${viewport.xmin}, ${viewport.ymin}) {};\n\\node at (${viewport.xmax}, ${viewport.ymax}) {};\n` + '\\end{tikzpicture}';
-		console.log(code)
 		return code;
 	}
 }
@@ -143,7 +142,7 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 
 		error: function (result, statut, error) {
 			gui_error();
-			alert("there is an error: " + result + statut + error);
+			console.log("there is an error: ", result, statut, error);
 		}
 
 	});
@@ -297,8 +296,6 @@ function draw() {
 		ctx.save();
 		ctx.translate(viewport.boundedBoxHalfSize, viewport.boundedBoxHalfSize);
 		ctx.scale(viewport.scaleratio, -viewport.scaleratio);
-		console.log("scaleratio: " + viewport.scaleratio)
-		console.log("maxcoord: " + viewport.maxcoord)
 
 		drawGrid(ctx);
 
@@ -565,6 +562,11 @@ function tikzcodeCoordinatesSelect(point) {
 }
 
 function tikzcodeAddLine(line) {
+	const currentLine = editor.session.getLine(editor.selection.getRange().start.row);
+	if (currentLine.trim() != "")
+		line = "\n   " + line;
+	editorInsert(line);
+	return
 	let code = getCode();
 	const i = code.indexOf('\\end{tikzpicture}');
 	if (i < 0)
@@ -576,7 +578,10 @@ function tikzcodeAddLine(line) {
 }
 
 
-
+function editorInsert(str) {
+	const r = editor.selection.getRange();
+	editor.session.replace(r, str);
+}
 
 
 function formatToAvoidUglyNumber(x) {

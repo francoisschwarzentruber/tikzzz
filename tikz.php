@@ -102,7 +102,11 @@ output: compile the file and generate a pdf and an image .png of the pdf
     if (file_exists("$latexfilename.svg"))
       unlink("$latexfilename.svg");
 
-    exec_timeout("pdflatex -interaction=nonstopmode -shell-escape $latexfilename.tex", 5);
+    try {
+      exec_timeout("pdflatex -interaction=nonstopmode -shell-escape $latexfilename.tex", 5);
+    } catch (Exception $e) {
+      echo "error in compiling", $e->getMessage(), "\n";
+    }
 
     if (!file_exists("$latexfilename.svg")) {
       if (!file_exists("$latexfilename.log")) {
@@ -112,7 +116,7 @@ output: compile the file and generate a pdf and an image .png of the pdf
     }
 
     clean();
-    
+
     chdir("..");
   }
 
