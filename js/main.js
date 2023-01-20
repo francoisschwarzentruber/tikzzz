@@ -1,8 +1,55 @@
-const MAXCOORDDEFAULT = 10;
+
 const GRIDSPACING = 0.5;
 let isaskedcompiling = false;
 let compiletimer = null;
 
+
+/**
+ * viewport (i.e. the portion of the plane of the tikz picture)
+ */
+class Viewport {
+	static MAXCOORDDEFAULT = 10;
+
+	/**
+	 * 
+	 * @param {*} tikzCode
+	 * @description udpate the viewport from the tikzCode 
+	 */
+	update(tikzCode) {
+		const points = getPointsFromTikz(tikzCode);
+
+		this.xmin = -Viewport.MAXCOORDDEFAULT;
+		this.xmax = Viewport.MAXCOORDDEFAULT;
+		this.ymin = -Viewport.MAXCOORDDEFAULT;
+		this.ymax = Viewport.MAXCOORDDEFAULT;
+
+		for (const point of points) {
+			this.xmin = Math.min(point.x, this.xmin);
+			this.xmax = Math.max(point.x, this.xmax);
+			this.ymin = Math.min(point.y, this.ymin);
+			this.ymax = Math.max(point.y, this.ymax);
+		}
+
+		const smallScale = 1.2;
+		const maxcoord = Math.max(Math.abs(this.xmin), Math.abs(this.ymin), Math.abs(this.xmax), Math.abs(this.ymax));
+		this.xmin = -maxcoord * smallScale;
+		this.ymin = -maxcoord * smallScale;
+		this.xmax = maxcoord * smallScale;
+		this.ymax = maxcoord * smallScale;
+	}
+
+	get maxcoord() { return this.xmax };
+	get boundedBoxHalfSize() { return canvas.width / 2; }
+	get scaleratio() { return this.boundedBoxHalfSize / this.maxcoord };
+
+	getCoordinatesFromPixelCoordinates(p) {
+		return { x: ((p.x - this.boundedBoxHalfSize) / this.scaleratio), y: -((p.y - this.boundedBoxHalfSize) / this.scaleratio) };
+	}
+
+}
+
+
+let viewport = new Viewport();
 
 
 
@@ -12,33 +59,14 @@ let compiletimer = null;
  * @returns the code + extra tikz code with empty nodes for calibrating the canvas
  */
 function getTikzCodeWithBoundingBox(code) {
-	const points = getPointsFromTikz(code);
-
-	let xmin = -MAXCOORDDEFAULT;
-	let xmax = MAXCOORDDEFAULT;
-	let ymin = -MAXCOORDDEFAULT;
-	let ymax = MAXCOORDDEFAULT;
-
-	for (const point of points) {
-		xmin = Math.min(point.x, xmin);
-		xmax = Math.max(point.x, xmax);
-		ymin = Math.min(point.y, ymin);
-		ymax = Math.max(point.y, ymax);
-	}
-
-	const smallScale = 1;
-	const maxcoord = Math.max(Math.abs(xmin), Math.abs(ymin), Math.abs(xmax), Math.abs(ymax));
-	xmin = -maxcoord*smallScale;
-	ymin = -maxcoord*smallScale;
-	xmax = maxcoord*smallScale;
-	ymax = maxcoord*smallScale;
+	viewport.update(code);
 
 	const i = code.indexOf('\\end{tikzpicture}');
 	if (i < 0)
 		return code;
 	else {
 		code = code.substring(0, i);
-		code += `\\node at (${xmin}, ${ymin}) {};\n\\node at (${xmax}, ${ymax}) {};\n` + '\\end{tikzpicture}';
+		code += `\\node at (${viewport.xmin}, ${viewport.ymin}) {};\n\\node at (${viewport.xmax}, ${viewport.ymax}) {};\n` + '\\end{tikzpicture}';
 		console.log(code)
 		return code;
 	}
@@ -60,9 +88,6 @@ function getTikzcodeNewLabel() {
 }
 
 
-const phpcompileURL = "tikz.php";   //"http://127.0.0.1/servertikzzz/tikz.php"; //"tikz.php";
-let lastSVGfile = undefined;
-
 
 /**
  * 
@@ -72,6 +97,8 @@ let lastSVGfile = undefined;
 function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 	gui_compiling();
 	console.log("compile");
+
+	const phpcompileURL = "tikz.php";   //"http://127.0.0.1/servertikzzz/tikz.php"; //"tikz.php";
 
 	if (trueiffinalversiontodownload == undefined)
 		trueiffinalversiontodownload = false;
@@ -92,13 +119,11 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 			const d = new Date();
 
 			const lines = response.split("\n");
-			lastSVGfile = lines[lines.length - 1] + ".svg?" + d.getTime();
-
-
+			const svgFileName = lines[lines.length - 1] + ".svg?" + d.getTime();
 
 			if (trueiffinalversiontodownload) {
 				const img = new Image();
-				img.src = lastSVGfile;
+				img.src = svgFileName;
 				img.onload = function () {
 					gui_compilesuccess();
 					callBackIfSuccess();
@@ -107,7 +132,7 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 			}
 			else {
 				const img = document.getElementById("outputimg");//new Image();
-				img.src = lastSVGfile;
+				img.src = svgFileName;
 				img.onload = function () {
 					gui_compilesuccess();
 					draw();
@@ -163,6 +188,8 @@ function getPointsFromTikz(code) {
 	const points = new Array();
 	let counter = 0;
 	let name = undefined;
+	let iname = undefined;
+	let iend = undefined;
 
 	console.log("getPointsFromTikz");
 	let i = 0;
@@ -170,8 +197,8 @@ function getPointsFromTikz(code) {
 		i = code.indexOf("(", i);
 
 		if (i >= 0) {
-			var icomma = code.indexOf(",", i);
-			var iend = code.indexOf(")", i);
+			const icomma = code.indexOf(",", i);
+			iend = code.indexOf(")", i);
 
 
 			const n1 = code.substring(i + 1, icomma);
@@ -205,8 +232,6 @@ function getPointsFromTikz(code) {
 
 
 
-let boundedBoxHalfSize;
-let scaleratio;
 
 
 
@@ -214,25 +239,31 @@ let scaleratio;
 
 
 function draw() {
+
+	/**
+	 * 
+	 * @param {*} ctx
+	 * @description draw a grid 
+	 */
 	function drawGrid(ctx) {
 		ctx.beginPath();
 		ctx.strokeStyle = "#DDDDDD";
-		ctx.lineWidth = 0.8 / scaleratio;
+		ctx.lineWidth = 0.8 / viewport.scaleratio;
 
-		function toGridSpacing(a) { return Math.floor(a*2)/2; }
+		function toGridSpacing(a) { return Math.floor(a * 2) / 2; }
 
-		const gridspacingDisplayed = toGridSpacing((boundedBoxHalfSize / scaleratio)/10);
-		for (let ix = -boundedBoxHalfSize; ix < boundedBoxHalfSize; ix+=gridspacingDisplayed) {
-			ctx.moveTo(ix * gridspacingDisplayed, -boundedBoxHalfSize);
-			ctx.lineTo(ix * gridspacingDisplayed, boundedBoxHalfSize);
-			ctx.moveTo(-boundedBoxHalfSize, ix * gridspacingDisplayed);
-			ctx.lineTo(boundedBoxHalfSize, ix * gridspacingDisplayed);
+		const gridspacingDisplayed = toGridSpacing((viewport.maxcoord) / 10);
+		for (let ix = -viewport.maxcoord; ix < viewport.maxcoord; ix += gridspacingDisplayed) {
+			ctx.moveTo(ix * gridspacingDisplayed, -viewport.maxcoord);
+			ctx.lineTo(ix * gridspacingDisplayed, viewport.maxcoord);
+			ctx.moveTo(-viewport.maxcoord, ix * gridspacingDisplayed);
+			ctx.lineTo(viewport.maxcoord, ix * gridspacingDisplayed);
 		}
 		ctx.stroke();
 	}
 
 	function drawPoint(ctx, point) {
-		var crosssize = 5 / scaleratio;
+		var crosssize = 5 / viewport.scaleratio;
 		ctx.beginPath();
 		ctx.moveTo(point.x - crosssize, point.y - crosssize);
 		ctx.lineTo(point.x + crosssize, point.y + crosssize);
@@ -247,7 +278,7 @@ function draw() {
 	function drawLines(ctx, polylinePoints) {
 		ctx.beginPath();
 		ctx.strokeStyle = "#888888";
-		ctx.lineWidth = 1 / scaleratio;
+		ctx.lineWidth = 1 / viewport.scaleratio;
 		ctx.moveTo(polylinePoints[0].x, polylinePoints[0].y);
 		for (let i = 1; i < polylinePoints.length; i++)
 			ctx.lineTo(polylinePoints[i].x, polylinePoints[i].y);
@@ -262,18 +293,12 @@ function draw() {
 	try {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-		boundedBoxHalfSize = canvas.width / 2;
-
-		const maxcoord = Math.max(MAXCOORDDEFAULT, Math.max(...getPointsFromTikz(getCode()).map((p) => Math.max(Math.abs(p.x), Math.abs(p.y)))));
-		console.log("maxcoord:" + maxcoord);
-		scaleratio = boundedBoxHalfSize / maxcoord;
-
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 		ctx.save();
-		ctx.translate(boundedBoxHalfSize, boundedBoxHalfSize);
-		ctx.scale(scaleratio, -scaleratio);
-		console.log("scaleratio: " + scaleratio)
-		console.log("maxcoord: " + maxcoord)
+		ctx.translate(viewport.boundedBoxHalfSize, viewport.boundedBoxHalfSize);
+		ctx.scale(viewport.scaleratio, -viewport.scaleratio);
+		console.log("scaleratio: " + viewport.scaleratio)
+		console.log("maxcoord: " + viewport.maxcoord)
 
 		drawGrid(ctx);
 
@@ -281,9 +306,9 @@ function draw() {
 
 		for (const point of points) {
 			if (pointCurrent == point && mouseInteraction != MOUSEINTERATION_MOVEPOINT)
-				ctx.lineWidth = 5 / scaleratio;
+				ctx.lineWidth = 5 / viewport.scaleratio;
 			else
-				ctx.lineWidth = 1 / scaleratio;
+				ctx.lineWidth = 1 / viewport.scaleratio;
 			drawPoint(ctx, point);
 
 		}
@@ -291,22 +316,21 @@ function draw() {
 		if (mouseInteraction == MOUSEINTERATION_MOVEPOINT) {
 			if (pointMoving != null) {
 				ctx.strokeStyle = "#FF0000";
-				ctx.lineWidth = 5 / scaleratio;
+				ctx.lineWidth = 5 / viewport.scaleratio;
 				drawPoint(ctx, pointMoving);
 			}
 		}
 		else if (mouseInteraction == MOUSEINTERATION_DRAW) {
 			drawLines(ctx, mouseInteractionDrawPoints);
-
 		}
 
 		ctx.restore();
 		ctx.save();
-		ctx.translate(boundedBoxHalfSize, boundedBoxHalfSize);
+		ctx.translate(viewport.boundedBoxHalfSize, viewport.boundedBoxHalfSize);
 		// /!\ we can not make ctx.scale(scaleratio, -scaleratio); because the text would be vertically mirrored
-		ctx.scale(scaleratio, scaleratio);
+		ctx.scale(viewport.scaleratio, viewport.scaleratio);
 
-		ctx.lineWidth = 1 / scaleratio;
+		ctx.lineWidth = 1 / viewport.scaleratio;
 		if (pointCurrent != null) {
 			if (pointCurrent.name != undefined) {
 				ctx.font = "0.9px Arial";
@@ -329,28 +353,13 @@ function draw() {
 /*getCoordinatesFromPixelCoordinates({x: 300, y: 300})
  * */
 function getCoordinatesFromPixelCoordinatesGrid(p) {
+	const pp = viewport.getCoordinatesFromPixelCoordinates(p);
 	return {
-		x: Math.round(((p.x - boundedBoxHalfSize) / scaleratio) / GRIDSPACING) * GRIDSPACING,
-		y: -Math.round(((p.y - boundedBoxHalfSize) / scaleratio) / GRIDSPACING) * GRIDSPACING
+		x: Math.round((pp.x) / GRIDSPACING) * GRIDSPACING,
+		y: Math.round((pp.y) / GRIDSPACING) * GRIDSPACING
 	};
 }
 
-
-function getCoordinatesFromPixelCoordinates(p) {
-	return { x: ((p.x - boundedBoxHalfSize) / scaleratio), y: -((p.y - boundedBoxHalfSize) / scaleratio) };
-}
-
-
-
-
-
-function getMousePos(canvas, evt) {
-	const rect = canvas.getBoundingClientRect();
-	return {
-		x: (evt.clientX - rect.left) * 800 / rect.width,
-		y: (evt.clientY - rect.top) * 800 / rect.height
-	};
-}
 
 const MOUSEINTERATION_NONE = 0;
 const MOUSEINTERATION_MOVEPOINT = 1;
@@ -368,7 +377,7 @@ function distance(point, x, y) { return Math.sqrt((point.x - x) * (point.x - x) 
 
 function getPointUnderCursor(x, y) {
 	let pointCurrent = null;
-	let d = boundedBoxHalfSize * 0.0005;
+	let d = viewport.boundedBoxHalfSize * 0.005;
 
 	for (const point of points) {
 		if (distance(point, x, y) <= d) {
@@ -384,6 +393,21 @@ function getPointUnderCursor(x, y) {
 let pointCurrent = undefined;
 let pointMoving;
 
+
+
+/**
+ * 
+ * @param {*} canvas 
+ * @param {*} evt 
+ * @returns the point in the canvas zone (in pixels)
+ */
+function getMousePos(canvas, evt) {
+	const rect = canvas.getBoundingClientRect();
+	return {
+		x: (evt.clientX - rect.left) * 800 / rect.width,
+		y: (evt.clientY - rect.top) * 800 / rect.height
+	};
+}
 
 
 $(document).ready(function () {
@@ -445,7 +469,7 @@ $(document).ready(function () {
 
 			}
 			else if (mouseInteraction == MOUSEINTERATION_DRAW) {
-				pos = getCoordinatesFromPixelCoordinates(getMousePos(canvas, e));
+				pos = viewport.getCoordinatesFromPixelCoordinates(getMousePos(canvas, e));
 				mouseInteractionDrawPoints.push(pos);
 				draw();
 			}
