@@ -35,9 +35,7 @@ session_start(); // Création de la session
   </div>
 
 
-  <script src="js/gui.js" type="text/javascript"></script>
-  <script src="js/main.js" type="text/javascript"></script>
-
+  <script type="text/javascript" src="dist/bundle.js"></script>
 </body>
 
 </html>
