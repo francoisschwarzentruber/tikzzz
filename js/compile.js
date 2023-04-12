@@ -1,14 +1,15 @@
 import { getTikzCodeWithBoundingBox, draw, setPoints } from "./drawing";
-import { getCode, getPointsFromTikz } from "./code";
+import { checkCode, getCode, getPointsFromTikz } from "./code";
 
 
-function gui_compilesuccess() { imgStatus.src = 'ok.png'; }
-function gui_compiling() { imgStatus.src = 'running.gif'; }
-function gui_wait() { imgStatus.src = 'wait.jpg'; }
-function gui_error() { imgStatus.src = 'error.png'; }
+function gui_compilesuccess() { imgStatus.src = 'ok.png'; imgStatus.title = "Everything is ok" }
+function gui_compiling() { imgStatus.src = 'running.gif'; imgStatus.title = "compiling..." }
+function gui_wait() { imgStatus.src = 'wait.jpg'; imgStatus.title = "Wait..." }
+function gui_error(msg) { imgStatus.src = 'error.png'; imgStatus.title = msg }
 
 function download() { compile(true, function () { window.open(lastSVGfile); }); }
 
+document.getElementById("buttonDownload").onclick = download;
 
 
 let isaskedcompiling = false;
@@ -24,6 +25,13 @@ let compiletimer = null;
 function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 	gui_compiling();
 	console.log("compile");
+
+	/*const msg = checkCode();
+	if (msg != true) {
+		gui_error(msg);
+		isaskedcompiling = false;
+		return;
+	}*/
 
 	const phpcompileURL = "tikz.php";   //"http://127.0.0.1/servertikzzz/tikz.php"; //"tikz.php";
 
@@ -55,7 +63,7 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 					gui_compilesuccess();
 					callBackIfSuccess();
 				};
-				img.onerror = function () { gui_error(); }
+				img.onerror = function () { gui_error("impossible to retrieve the SVG image from the server"); }
 			}
 			else {
 				const img = document.getElementById("outputimg");//new Image();
@@ -64,12 +72,13 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 					gui_compilesuccess();
 					draw();
 				};
-				img.onerror = function () { gui_error(); }
+				img.onerror = function () { gui_error("impossible to retrieve the SVG image from the server"); }
 			}
 		},
 
 		error: function (result, statut, error) {
-			gui_error();
+			isaskedcompiling = false;
+			gui_error("there is an error: ", result, statut, error);
 			console.log("there is an error: ", result, statut, error);
 		}
 

@@ -20,9 +20,9 @@ session_start(); // Création de la session
     Tikzzz: Tikz diagram online editor
     <span style="left:50%">
       <img id="imgStatus" title="status of the compilation" height=16px />
-      <button id="buttonDownload" onclick="download()">❤️ Download</button>
-      <button id="buttonModeSelection" class="active" onclick="modeselection()">✋ Select</button>
-      <button id="buttonModeDraw" onclick="modedraw()">✎ Draw</button>
+      <button id="buttonDownload">❤️ Download</button>
+      <button id="buttonModeSelection" class="active">✋ Select</button>
+      <button id="buttonModeDraw">✎ Draw</button>
     </span>
     <div id="toolbarInsert"></div>
   </div>

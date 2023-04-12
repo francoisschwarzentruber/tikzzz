@@ -1,10 +1,8 @@
-import { getPointsFromTikz, tikzcodeCoordinatesSelect, tikzcodeSelectionReplaceCoordinates } from "./code.js";
+import { getPointsFromTikz, getTikzcodeFromCoordinates, tikzcodeCoordinatesSelect, tikzcodeSelectionReplaceCoordinates, tikzcodeAddLine } from "./code.js";
 import { whenmodified, whenmodifiedquick } from "./compile.js";
 
 const MODE_SELECTION = 0;
 const MODE_DRAW = 1;
-
-
 
 let guiMode = MODE_SELECTION;
 
@@ -24,6 +22,8 @@ function modedraw() {
     canvas.style.cursor = "crosshair";
 }
 
+document.getElementById("buttonModeSelection").onclick = modeselection;
+document.getElementById("buttonModeDraw").onclick = modedraw;
 
 const GRIDSPACING = 0.5;
 
@@ -256,8 +256,9 @@ function getMousePos(canvas, evt) {
 
 
 
+window.onload =  () => {
 
-$(document).ready(function () {
+
     const canvas = document.getElementById("canvas");
 
     canvas.onmousedown = function (e) {
@@ -330,6 +331,13 @@ $(document).ready(function () {
         var x = pos.x;
         var y = pos.y;
 
+        function getTikzcodeFromPoint(point) {
+            if (point.name != undefined)
+                return "(" + point.name + ")";
+            else
+                return getTikzcodeFromCoordinates(point);
+        }
+
 
         if ((mouseInteraction == MOUSEINTERATION_MOVEPOINT) && (pointCurrent != null)) {
             if (pos.x != pointCurrent.x || pos.y != pointCurrent.y) {
@@ -389,7 +397,7 @@ $(document).ready(function () {
     }
     whenmodified();
 }
-);
+
 
 
 

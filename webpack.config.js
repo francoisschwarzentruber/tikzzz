@@ -6,4 +6,13 @@ module.exports = {
   output: {
     filename: 'bundle.js'
   },
+  resolve: {
+    // ...
+    fallback: {
+      // 👇️👇️👇️ add this 👇️👇️👇️
+      "fs": false,
+      "os": false,
+      "path": false,
+    }
+  }
 };

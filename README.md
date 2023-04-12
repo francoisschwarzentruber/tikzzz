@@ -38,5 +38,6 @@ $ ./runlocally.sh
 ```
 It should open your browser to http://127.0.0.1:8123/, if not you can copy-paste the link or click on it.
 
-## License?
+## License
 Written by [François Schwarzentruber](https://github.com/francoisschwarzentruber/)
+Thanks to https://github.com/ysahil97/tikz-to-yed-graphml/blob/master/tikz2graphml/grammar/Tikz.g4
