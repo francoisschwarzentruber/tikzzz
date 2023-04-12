@@ -1,4 +1,4 @@
-import { getPointsFromTikz, getTikzcodeFromCoordinates, tikzcodeCoordinatesSelect, tikzcodeSelectionReplaceCoordinates, tikzcodeAddLine } from "./code.js";
+import { getPointsFromTikz, getTikzcodeFromCoordinates, tikzcodeCoordinatesSelect, tikzcodeAddLine } from "./code.js";
 import { whenmodified, whenmodifiedquick } from "./compile.js";
 
 const MODE_SELECTION = 0;
@@ -256,7 +256,7 @@ function getMousePos(canvas, evt) {
 
 
 
-window.onload =  () => {
+window.onload = () => {
 
 
     const canvas = document.getElementById("canvas");
@@ -331,22 +331,24 @@ window.onload =  () => {
         var x = pos.x;
         var y = pos.y;
 
-        function getTikzcodeFromPoint(point) {
-            if (point.name != undefined)
-                return "(" + point.name + ")";
-            else
-                return getTikzcodeFromCoordinates(point);
-        }
-
 
         if ((mouseInteraction == MOUSEINTERATION_MOVEPOINT) && (pointCurrent != null)) {
             if (pos.x != pointCurrent.x || pos.y != pointCurrent.y) {
-                tikzcodeSelectionReplaceCoordinates(pos);
+                pointCurrent.apply(pos);
+                
                 pointCurrent = null;
                 whenmodifiedquick();
             }
         }
         else if (mouseInteraction == MOUSEINTERATION_DRAW) {
+
+            function getTikzcodeFromPoint(point) {
+                if (point.name != undefined)
+                    return "(" + point.name + ")";
+                else
+                    return getTikzcodeFromCoordinates(point);
+            }
+
             var pointAlreadyHere = getPointUnderCursor(pos.x, pos.y);
             if ((pointAlreadyHere == null) && (distance(mouseInteractionDrawPoint1, pos.x, pos.y) <= 0.5)) {
                 tikzcodeAddLine('\\node (' + getTikzcodeNewLabel() + ') at ' + getTikzcodeFromPoint(mouseInteractionDrawPoint1) + " {};");

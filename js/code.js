@@ -1,4 +1,5 @@
 import { whenmodified, whenmodifiedquick } from "./compile.js";
+import { HandleCoordinate } from "./handle.js";
 
 
 const editor = ace.edit("code");
@@ -97,7 +98,7 @@ export function getPointsFromTikz(code) {
                         name = undefined;
                 }
 
-                points.push({ x: parseFloat(n1), y: parseFloat(n2), posbegin: i, posend: iend, name: name });
+                points.push(new HandleCoordinate({ x: parseFloat(n1), y: parseFloat(n2), posbegin: i, posend: iend, name: name }));
             }
         }
 
