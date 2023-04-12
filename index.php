@@ -11,7 +11,6 @@ session_start(); // Création de la session
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.12.3/src-noconflict/ace.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css">
-  <script src="js/jquery-1.11.0.min.js" type="text/javascript"></script>
 
 </head>
 

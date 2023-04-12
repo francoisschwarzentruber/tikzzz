@@ -7,7 +7,10 @@ function gui_compiling() { imgStatus.src = 'running.gif'; imgStatus.title = "com
 function gui_wait() { imgStatus.src = 'wait.jpg'; imgStatus.title = "Wait..." }
 function gui_error(msg) { imgStatus.src = 'error.png'; imgStatus.title = msg }
 
-function download() { compile(true, function () { window.open(lastSVGfile); }); }
+async function download() {
+	await compile(true);
+	window.open(lastSVGfile);
+}
 
 document.getElementById("buttonDownload").onclick = download;
 
@@ -20,9 +23,9 @@ let compiletimer = null;
 /**
  * 
  * @param {*} trueiffinalversiontodownload 
- * @param {*} callBackIfSuccess 
  */
-function compile(trueiffinalversiontodownload, callBackIfSuccess) {
+async function compile(trueiffinalversiontodownload) {
+	isaskedcompiling = false;
 	gui_compiling();
 	console.log("compile");
 
@@ -40,49 +43,52 @@ function compile(trueiffinalversiontodownload, callBackIfSuccess) {
 
 	const code = trueiffinalversiontodownload ? getCode() : getTikzCodeWithBoundingBox(getCode());
 
-	$.ajax({
-		type: "POST",
-		async: true,
-		url: phpcompileURL,
-		data: { code: code, trueiffinalversiontodownload: trueiffinalversiontodownload },
+	const formData = new FormData();
+	formData.append('code', code);
+	formData.append('trueiffinalversiontodownload', trueiffinalversiontodownload);
 
-		success: function (response, statut) {
-			if (response != "") {
-				console.log("success with the message: " + response);
-				isaskedcompiling = false;
-			}
-			const d = new Date();
+	const query = await fetch(phpcompileURL, {
+		method: "POST",
+		body: formData
+	});
 
-			const lines = response.split("\n");
-			const svgFileName = lines[lines.length - 1] + ".svg?" + d.getTime();
+	if (query.ok) {
+		const response = await query.text();
 
-			if (trueiffinalversiontodownload) {
-				const img = new Image();
-				img.src = svgFileName;
-				img.onload = function () {
-					gui_compilesuccess();
-					callBackIfSuccess();
-				};
-				img.onerror = function () { gui_error("impossible to retrieve the SVG image from the server"); }
-			}
-			else {
-				const img = document.getElementById("outputimg");//new Image();
-				img.src = svgFileName;
-				img.onload = function () {
-					gui_compilesuccess();
-					draw();
-				};
-				img.onerror = function () { gui_error("impossible to retrieve the SVG image from the server"); }
-			}
-		},
-
-		error: function (result, statut, error) {
+		if (response != "") {
+			console.log("success with the message: " + response);
 			isaskedcompiling = false;
-			gui_error("there is an error: ", result, statut, error);
-			console.log("there is an error: ", result, statut, error);
+		}
+		const d = new Date();
+
+		const lines = response.split("\n");
+		const svgFileName = lines[lines.length - 1] + ".svg?" + d.getTime();
+
+		if (trueiffinalversiontodownload) {
+			const img = new Image();
+			img.src = svgFileName;
+			img.onload = function () {
+				gui_compilesuccess();
+			};
+			img.onerror = function () { gui_error("impossible to retrieve the SVG image from the server"); }
+		}
+		else {
+			const img = document.getElementById("outputimg");//new Image();
+			img.src = svgFileName;
+			img.onload = function () {
+				gui_compilesuccess();
+				draw();
+			};
+			img.onerror = function () { gui_error("impossible to retrieve the SVG image from the server"); }
 		}
 
-	});
+	}
+	else {
+
+		gui_error("there is an error: ", query.result, query.statut, query.error);
+		console.log("there is an error: ", query.result, query.statut, query.error);
+	}
+
 }
 
 
