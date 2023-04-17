@@ -415,7 +415,7 @@ window.onload = () => {
 export function getTikzCodeWithBoundingBox(code) {
     viewport.update(code);
 
-    const i = code.indexOf('\\end{tikzpicture}');
+    const i = code.lastIndexOf('\\end{tikzpicture}');
     if (i < 0)
         return code;
     else {
