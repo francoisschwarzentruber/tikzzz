@@ -1,5 +1,5 @@
-import { getTikzCodeWithBoundingBox, draw, setPoints } from "./drawing";
-import { checkCode, getCode, getPointsFromTikz } from "./code";
+import { getTikzCodeWithBoundingBox, draw, setPoints } from "./drawing.js";
+import { getCode, getPointsFromTikz } from "./code.js";
 
 
 function gui_compilesuccess() { imgStatus.src = 'ok.png'; imgStatus.title = "Everything is ok" }

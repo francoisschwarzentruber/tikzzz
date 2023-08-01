@@ -1,4 +1,7 @@
-import { getPointsFromTikz, getTikzcodeFromCoordinates, tikzcodeCoordinatesSelect, tikzcodeAddLine } from "./code.js";
+import {
+    getPointsFromTikz, getTikzcodeFromCoordinates, tikzcodeCoordinatesSelect,
+    getTikzcodeNewLabel, tikzcodeAddLine
+} from "./code.js";
 import { whenmodified, whenmodifiedquick } from "./compile.js";
 
 const MODE_SELECTION = 0;
@@ -335,7 +338,7 @@ window.onload = () => {
         if ((mouseInteraction == MOUSEINTERATION_MOVEPOINT) && (pointCurrent != null)) {
             if (pos.x != pointCurrent.x || pos.y != pointCurrent.y) {
                 pointCurrent.apply(pos);
-                
+
                 pointCurrent = null;
                 whenmodifiedquick();
             }

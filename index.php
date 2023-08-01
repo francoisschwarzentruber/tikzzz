@@ -34,7 +34,7 @@ session_start(); // Création de la session
   </div>
 
 
-  <script type="text/javascript" src="dist/bundle.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 
 </html>

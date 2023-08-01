@@ -24,37 +24,13 @@ function addInsertionButton(caption, code) {
     toolbarInsert.appendChild(b);
 }
 
-addInsertionButton("node", "\\node (A) at (1, 1) {};")
+
+addInsertionButton("node", "\\node (A) at (1, 1) {text};")
 addInsertionButton("edge", "\\draw (A) edge (B);")
 addInsertionButton("loop", "\\draw (A) edge[loop, loop right] (A);")
 addInsertionButton("rectangle", "\\draw (1, 1) rectangle (2, 2);")
 addInsertionButton("ellipse", "\\draw (1, 1) ellipse (2cm and 1cm);")
 addInsertionButton("curve", "\\draw plot [smooth cycle] coordinates {(0, 0) (1, 0) (2, 2)};")
-
-
-
-
-
-
-
-/**
- * 
- * @returns a new fresh tikz label
- */
-function getTikzcodeNewLabel() {
-    const code = getCode();
-    for (let i = 0; i < 5000; i++) {
-        const id = "v" + i;
-        if (code.indexOf("(" + id + ")") == -1)
-            return id;
-    }
-    return "v42";
-}
-
-
-
-
-
 
 
 
@@ -128,10 +104,19 @@ export function tikzcodeCoordinatesSelect(point) {
 export function tikzcodeAddLine(line) {
     function editorInsert(str) {
         const r = editor.selection.getRange();
+        const row = r.end.row+1;
+        editor.gotoLine(row, +Infinity);
         editor.session.replace(r, str);
+        editor.gotoLine(row+1, +Infinity);
     }
-    const currentLine = editor.session.getLine(editor.selection.getRange().start.row);
-    if (currentLine.trim() != "")
+
+    function isCurrentLineEmpty() {
+        const currentLine = editor.session.getLine(editor.selection.getRange().end.row);
+        return currentLine.trim() == "";
+    }
+    editor.execCommand("gotolineend");
+
+    if (!isCurrentLineEmpty())
         line = "\n   " + line;
     editorInsert(line);
 }
@@ -140,7 +125,19 @@ export function tikzcodeAddLine(line) {
 
 
 
-
+/**
+     * 
+     * @returns a new fresh tikz label
+     */
+export function getTikzcodeNewLabel() {
+    const code = getCode();
+    for (let i = 0; i < 5000; i++) {
+        const id = "v" + i;
+        if (code.indexOf("(" + id + ")") == -1)
+            return id;
+    }
+    return "v42";
+}
 
 
 
@@ -163,7 +160,7 @@ export function tikzcodeSelectionReplaceCoordinates(point) {
     replaceIt(getTikzcodeFromCoordinates(point));
 }
 
-
+/**
 import antlr4 from 'antlr4';
 import tikzLexer from "../grammar/tikzLexer";
 import tikzParser from "../grammar/tikzParser";
@@ -202,3 +199,4 @@ function getTree() {
 
 window['getTree'] = getTree;
 
+*/
