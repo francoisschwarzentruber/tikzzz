@@ -7,6 +7,7 @@ function gui_compiling() { imgStatus.src = 'running.gif'; imgStatus.title = "com
 function gui_wait() { imgStatus.src = 'wait.jpg'; imgStatus.title = "Wait..." }
 function gui_error(msg) { imgStatus.src = 'error.png'; imgStatus.title = msg }
 
+let lastSVGfile = undefined;
 async function download() {
 	await compile(true);
 	window.open(lastSVGfile);
@@ -22,7 +23,8 @@ let compiletimer = null;
 
 /**
  * 
- * @param {*} trueiffinalversiontodownload 
+ * @param {*} trueiffinalversiontodownload, if true we really compile the good image for downloading
+ * if false or undefined, we compile an image to be overlapped with the GUI
  */
 async function compile(trueiffinalversiontodownload) {
 	isaskedcompiling = false;
@@ -70,6 +72,7 @@ async function compile(trueiffinalversiontodownload) {
 			img.onload = function () {
 				gui_compilesuccess();
 			};
+			lastSVGfile = svgFileName; //ugly
 			img.onerror = function () { gui_error("impossible to retrieve the SVG image from the server"); }
 		}
 		else {
