@@ -139,3 +139,15 @@ canvas {
 	position: absolute;
 	width: 100%;
 }
+
+
+#buttonDownload {
+	right: 0px;
+	position: absolute;
+	top: 0px;
+}
+
+
+body {
+	margin: 0px;
+}
