@@ -16,7 +16,6 @@ session_start(); // Création de la session
 
 <body>
   <div class="toolbar">
-    Tikzzz: Tikz diagram online editor
     <span style="left:50%">
       <img id="imgStatus" title="status of the compilation" height=16px />
       

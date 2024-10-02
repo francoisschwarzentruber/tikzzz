@@ -105,7 +105,7 @@ input.visible {
 
 #code {
 	width: 50%;
-	top: 60px;
+	top: 40px;
 	position: absolute;
 	bottom: 0px;
 	left: 0;
@@ -124,7 +124,7 @@ input.visible {
 
 #output {
 	position: absolute;
-	top: 60px;
+	top: 40px;
 	left: 50%;
 	width: 50%;
 }
