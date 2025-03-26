@@ -1,4 +1,4 @@
-import { whenmodified, whenmodifiedquick } from "./compile.js";
+import { whenmodified } from "./compile.js";
 import { HandleCoordinate } from "./handle.js";
 
 
@@ -15,7 +15,12 @@ editor.commands.on('afterExec', () => whenmodified());
 
 function replaceIt(newtxt) { editor.session.replace(editor.selection.getRange(), newtxt); }
 
-
+/**
+ * 
+ * @param {*} caption e.g. "node" (the name of what to insert)
+ * @param {*} code the corresponding tikz code to insert
+ * @description create a button in the toolbar to insert the corresponding tikz code
+ */
 function addInsertionButton(caption, code) {
     const b = document.createElement("button");
     b.innerHTML = caption;
@@ -66,7 +71,6 @@ export function getPointsFromTikz(code) {
             if ((i < iend) && ((iend < icomma) || (icomma < i))) {
                 iname = i;
                 name = code.substring(i + 1, iend);
-                console.log(name);
             }
             if ((i < icomma) && (icomma < iend) && (parseFloat(n1) != NaN) && (parseFloat(n2) != NaN)) {
                 if (name != undefined) {
@@ -160,43 +164,3 @@ export function tikzcodeSelectionReplaceCoordinates(point) {
     replaceIt(getTikzcodeFromCoordinates(point));
 }
 
-/**
-import antlr4 from 'antlr4';
-import tikzLexer from "../grammar/tikzLexer";
-import tikzParser from "../grammar/tikzParser";
-
-export function checkCode() {
-    try {
-        getTree();
-        return true;
-    }
-    catch (e) {
-        return e.toString();
-    }
-}
-
-
-
-function getTree() {
-    const input = getCode();
-    const chars = new antlr4.InputStream(input);
-    const lexer = new tikzLexer(chars);
-    const tokens = new antlr4.CommonTokenStream(lexer);
-    const parser = new tikzParser(tokens);
-    parser.removeErrorListeners(); // supprime les écouteurs d'erreurs par défaut
-    parser.addErrorListener({ // ajoute un nouvel écouteur d'erreur
-        syntaxError: function (recognizer, offendingSymbol, line, column, msg, e) {
-            throw new Error(`Tikz syntax error at line ${line}, column ${column}: ${msg}`);
-        },
-        reportAmbiguity: function (recognizer, offendingSymbol, line, column, msg, e) {
-        },
-        reportAttemptingFullContext: function (recognizer, offendingSymbol, line, column, msg, e) {
-        }
-    });
-    parser.buildParseTrees = true;
-    return parser.begin(); //begin is the name of the axiom in the grammar
-}
-
-window['getTree'] = getTree;
-
-*/

@@ -102,8 +102,8 @@ async function compile(trueiffinalversiontodownload) {
  * 
  * @param {*} durationWait 
  * @description ask to compile the image. The compilation will start in durationWait. meanwhile, it is possible that 
- * the code is modified again... thus, we will cancel the compilation and wait for the new modification that will
- * be incorporated
+ * the code is modified again... thus, we will cancel the compilation query
+ * and wait for the new modification that will be incorporated
  */
 function askForCompilation(durationWait) {
 	gui_wait();

@@ -72,6 +72,12 @@ class Viewport {
     get boundedBoxHalfSize() { return canvas.width / 2; }
     get scaleratio() { return this.boundedBoxHalfSize / this.maxcoord };
 
+
+
+    /**
+     * @param p {x, y} in pixels
+     * @returns {x, y} in the TikZ coordinates
+     */
     getCoordinatesFromPixelCoordinates(p) {
         return { x: ((p.x - this.boundedBoxHalfSize) / this.scaleratio), y: -((p.y - this.boundedBoxHalfSize) / this.scaleratio) };
     }
@@ -80,6 +86,9 @@ class Viewport {
 
 
 export let viewport = new Viewport();
+
+
+
 let points = new Array();
 
 export function setPoints(pts) {
@@ -110,6 +119,13 @@ export function draw() {
         ctx.stroke();
     }
 
+
+    /**
+     * 
+     * @param {*} ctx the context of the canvas, the context has been "transformed" so that it fits the coordinates of the tikz picture
+     * @param {*} point in the Tikz coordinates
+     * @description draw the point in the canvas (i.e. a cross)
+     */
     function drawPoint(ctx, point) {
         var crosssize = 5 / viewport.scaleratio;
         ctx.beginPath();
@@ -134,7 +150,6 @@ export function draw() {
         ctx.stroke();
     }
 
-    //console.log("draw"); 
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
@@ -247,7 +262,7 @@ let pointMoving;
  * @param {*} evt 
  * @returns the point in the canvas zone (in pixels)
  */
-function getMousePos(canvas, evt) {
+function getMousePosPixels(canvas, evt) {
     const rect = canvas.getBoundingClientRect();
     return {
         x: (evt.clientX - rect.left) * 800 / rect.width,
@@ -266,7 +281,7 @@ window.onload = () => {
 
     canvas.onmousedown = function (e) {
         mouseButtonDown = true;
-        var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePos(canvas, e));
+        var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePosPixels(canvas, e));
         pointCurrent = getPointUnderCursor(pos.x, pos.y);
 
 
@@ -297,7 +312,7 @@ window.onload = () => {
     }
 
     canvas.onmousemove = function (e) {
-        var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePos(canvas, e));
+        var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePosPixels(canvas, e));
         var x = pos.x;
         var y = pos.y;
 
@@ -320,7 +335,7 @@ window.onload = () => {
 
             }
             else if (mouseInteraction == MOUSEINTERATION_DRAW) {
-                pos = viewport.getCoordinatesFromPixelCoordinates(getMousePos(canvas, e));
+                pos = viewport.getCoordinatesFromPixelCoordinates(getMousePosPixels(canvas, e));
                 mouseInteractionDrawPoints.push(pos);
                 draw();
             }
@@ -330,7 +345,7 @@ window.onload = () => {
 
     canvas.onmouseup = function (e) {
         mouseButtonDown = false;
-        var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePos(canvas, e));
+        var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePosPixels(canvas, e));
         var x = pos.x;
         var y = pos.y;
 
@@ -389,7 +404,7 @@ window.onload = () => {
     }
 
     canvas.ondblclick = function (e) {
-        var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePos(canvas, e));
+        var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePosPixels(canvas, e));
 
         if (pointCurrent == null) {
             tikzcodeAddLine('\\node (' + getTikzcodeNewLabel() + ') at ' + getTikzcodeFromCoordinates(pos) + ' {};');
