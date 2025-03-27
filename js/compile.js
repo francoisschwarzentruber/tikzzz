@@ -1,5 +1,6 @@
 import { getTikzCodeWithBoundingBox, draw, setPoints } from "./drawing.js";
-import { getCode, getPointsFromTikz } from "./code.js";
+import { TikzCode } from "./code.js";
+import { getPointsFromTikz } from "./handle.js";
 
 
 function gui_compilesuccess() { imgStatus.src = 'ok.png'; imgStatus.title = "Everything is ok" }
@@ -43,7 +44,7 @@ async function compile(trueiffinalversiontodownload) {
 	if (trueiffinalversiontodownload == undefined)
 		trueiffinalversiontodownload = false;
 
-	const code = trueiffinalversiontodownload ? getCode() : getTikzCodeWithBoundingBox(getCode());
+	const code = trueiffinalversiontodownload ? TikzCode.getCode() : getTikzCodeWithBoundingBox(TikzCode.getCode());
 
 	const formData = new FormData();
 	formData.append('code', code);
@@ -112,7 +113,7 @@ function askForCompilation(durationWait) {
 		isaskedcompiling = true;
 		if (compiletimer != null)
 			clearTimeout(compiletimer);
-		compiletimer = setTimeout(function () { compile(); setPoints(getPointsFromTikz(getCode())); draw(); }, durationWait);
+		compiletimer = setTimeout(function () { compile(); setPoints(getPointsFromTikz(TikzCode.getCode())); draw(); }, durationWait);
 	}
 }
 

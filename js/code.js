@@ -1,19 +1,110 @@
 import { whenmodified } from "./compile.js";
-import { HandleCoordinate } from "./handle.js";
 
 
-const editor = ace.edit("code");
-editor.getSession().setUseWorker(false);
-editor.getSession().setMode("ace/mode/latex");
-replaceIt("\\begin{tikzpicture}\n   \n\\end{tikzpicture}")
-editor.gotoLine(2, 4);
 
-export function getCode() { return editor.getValue(); }
-export function setCode(code) { editor.setValue(code); }
 
-editor.commands.on('afterExec', () => whenmodified());
+export class TikzCode {
 
-function replaceIt(newtxt) { editor.session.replace(editor.selection.getRange(), newtxt); }
+
+    static getCode() { return editor.getValue(); }
+    static setCode(code) { editor.setValue(code); }
+
+    static replaceIt(newtxt) { editor.session.replace(editor.selection.getRange(), newtxt); }
+
+
+    static coordinatesSelect(point) {
+        editor.selection.setRange({
+            start: editor.session.doc.indexToPosition(point.posbegin),
+            end: editor.session.doc.indexToPosition(point.posend + 1)
+        })
+    }
+
+
+
+    /**
+     * 
+     * @param {*} line 
+     * @description adds the line near the cursor in the tikzcode editor
+     */
+    static addLine(line) {
+        function editorInsert(str) {
+            const r = editor.selection.getRange();
+            const row = r.end.row + 1;
+            editor.gotoLine(row, +Infinity);
+            editor.session.replace(r, str);
+            editor.gotoLine(row + 1, +Infinity);
+        }
+
+        function getCurrentLineTrimedContent() {
+            const currentLine = editor.session.getLine(editor.selection.getRange().end.row);
+            return currentLine.trim()
+        }
+
+        function isCurrentLineEmpty() {
+            return getCurrentLineTrimedContent() == "";
+        }
+
+        editor.execCommand("gotolineend");
+
+        const currentLine = getCurrentLineTrimedContent();
+
+        if (currentLine == "\\end{tikzpicture}") {
+            editor.gotoLine(editor.selection.getRange().end.row - 1);
+            editor.execCommand("gotolineend");
+        }
+        if (currentLine != "")
+            line = "\n   " + line;
+        editorInsert(line);
+    }
+
+
+
+
+
+    /**
+         * 
+         * @returns a new fresh tikz label
+         */
+    static getNewLabel() {
+        const code = TikzCode.getCode();
+        for (let i = 0; i < 5000; i++) {
+            const id = "v" + i;
+            if (code.indexOf("(" + id + ")") == -1)
+                return id;
+        }
+        return "v42";
+    }
+
+
+
+
+    /**
+     * TO BE MOVED IN HANDLE,  but not possible because raw points when we move a point, Or should be as a static method there
+     * @param {*} point 
+     * @returns 
+     */
+    static getTikzcodeFromCoordinates(point) {
+        function formatToAvoidUglyNumber(x) {
+            if (x == x.toFixed(0))
+                return x;
+            else if (x == x.toFixed(1))
+                return x.toFixed(1);
+            else
+                return x.toFixed(2);
+        }
+        return "(" + formatToAvoidUglyNumber(point.x) + ", " + formatToAvoidUglyNumber(point.y) + ")";
+    }
+
+
+    static selectionReplaceCoordinates(point) {
+        TikzCode.replaceIt(TikzCode.getTikzcodeFromCoordinates(point));
+    }
+
+
+}
+
+
+
 
 /**
  * 
@@ -24,10 +115,19 @@ function replaceIt(newtxt) { editor.session.replace(editor.selection.getRange(),
 function addInsertionButton(caption, code) {
     const b = document.createElement("button");
     b.innerHTML = caption;
-    b.onclick = () => { tikzcodeAddLine(code); whenmodified(); editor.focus() };
+    b.onclick = () => { TikzCode.addLine(code); whenmodified(); editor.focus() };
     b.title = "Insert " + code;
     toolbarInsert.appendChild(b);
 }
+
+
+/* initialization */
+const editor = ace.edit("code");
+editor.getSession().setUseWorker(false);
+editor.getSession().setMode("ace/mode/latex");
+TikzCode.replaceIt("\\begin{tikzpicture}\n   \n\\end{tikzpicture}")
+editor.gotoLine(2, 4);
+editor.commands.on('afterExec', () => whenmodified());
 
 
 addInsertionButton("node", "\\node (A) at (1, 1) {text};")
@@ -40,127 +140,8 @@ addInsertionButton("curve", "\\draw plot [smooth cycle] coordinates {(0, 0) (1, 
 
 
 
-/**
- * 
- * @param {*} code tikz code
- * @returns an array containing the list of points, i.e. coordinates that appear in the tikz code
- * Each point is {x, y, posbegin, posend, name} where (x, y) are the coordinates, posbegin, posend are the index positions in the tikz
- * code
- * name = the name of the corresponding node if there is one
- */
-export function getPointsFromTikz(code) {
-    const points = new Array();
-    let counter = 0;
-    let name = undefined;
-    let iname = undefined;
-    let iend = undefined;
-
-    console.log("getPointsFromTikz");
-    let i = 0;
-    while (i >= 0) {
-        i = code.indexOf("(", i);
-
-        if (i >= 0) {
-            const icomma = code.indexOf(",", i);
-            iend = code.indexOf(")", i);
-
-
-            const n1 = code.substring(i + 1, icomma);
-            const n2 = code.substring(icomma + 1, iend);
-
-            if ((i < iend) && ((iend < icomma) || (icomma < i))) {
-                iname = i;
-                name = code.substring(i + 1, iend);
-            }
-            if ((i < icomma) && (icomma < iend) && (parseFloat(n1) != NaN) && (parseFloat(n2) != NaN)) {
-                if (name != undefined) {
-                    if (!((i - (iname + name.length) < 10) && code.substring(iname + name.length, i).indexOf("at") >= 0))
-                        name = undefined;
-                }
-
-                points.push(new HandleCoordinate({ x: parseFloat(n1), y: parseFloat(n2), posbegin: i, posend: iend, name: name }));
-            }
-        }
-
-        i = iend;
-
-        counter++;
-
-        if (counter > 100)
-            return points;
-
-    }
-    return points;
-}
 
 
 
 
-
-
-export function tikzcodeCoordinatesSelect(point) {
-    editor.selection.setRange({
-        start: editor.session.doc.indexToPosition(point.posbegin),
-        end: editor.session.doc.indexToPosition(point.posend + 1)
-    })
-}
-
-export function tikzcodeAddLine(line) {
-    function editorInsert(str) {
-        const r = editor.selection.getRange();
-        const row = r.end.row+1;
-        editor.gotoLine(row, +Infinity);
-        editor.session.replace(r, str);
-        editor.gotoLine(row+1, +Infinity);
-    }
-
-    function isCurrentLineEmpty() {
-        const currentLine = editor.session.getLine(editor.selection.getRange().end.row);
-        return currentLine.trim() == "";
-    }
-    editor.execCommand("gotolineend");
-
-    if (!isCurrentLineEmpty())
-        line = "\n   " + line;
-    editorInsert(line);
-}
-
-
-
-
-
-/**
-     * 
-     * @returns a new fresh tikz label
-     */
-export function getTikzcodeNewLabel() {
-    const code = getCode();
-    for (let i = 0; i < 5000; i++) {
-        const id = "v" + i;
-        if (code.indexOf("(" + id + ")") == -1)
-            return id;
-    }
-    return "v42";
-}
-
-
-
-
-
-export function getTikzcodeFromCoordinates(point) {
-    function formatToAvoidUglyNumber(x) {
-        if (x == x.toFixed(0))
-            return x;
-        else if (x == x.toFixed(1))
-            return x.toFixed(1);
-        else
-            return x.toFixed(2);
-    }
-    return "(" + formatToAvoidUglyNumber(point.x) + ", " + formatToAvoidUglyNumber(point.y) + ")";
-}
-
-
-export function tikzcodeSelectionReplaceCoordinates(point) {
-    replaceIt(getTikzcodeFromCoordinates(point));
-}
 

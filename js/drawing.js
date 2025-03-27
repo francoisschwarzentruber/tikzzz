@@ -1,7 +1,5 @@
-import {
-    getPointsFromTikz, getTikzcodeFromCoordinates, tikzcodeCoordinatesSelect,
-    getTikzcodeNewLabel, tikzcodeAddLine
-} from "./code.js";
+import { TikzCode } from "./code.js";
+import { getPointsFromTikz } from "./handle.js";
 import { whenmodified, whenmodifiedquick } from "./compile.js";
 
 const MODE_SELECTION = 0;
@@ -23,7 +21,7 @@ function modedraw() {
     buttonModeSelection.classList.remove('active');
     buttonModeDraw.classList.add('active');
     canvas.style.cursor = "crosshair";
-}
+} getPointsFromTikz
 
 document.getElementById("buttonModeSelection").onclick = modeselection;
 document.getElementById("buttonModeDraw").onclick = modedraw;
@@ -297,7 +295,7 @@ window.onload = () => {
         }
         else {
             if (pointCurrent != null) {
-                tikzcodeCoordinatesSelect(pointCurrent);
+                TikzCode.coordinatesSelect(pointCurrent);
                 mouseInteraction = MOUSEINTERATION_MOVEPOINT;
                 pointMoving = pointCurrent;
             }
@@ -364,12 +362,12 @@ window.onload = () => {
                 if (point.name != undefined)
                     return "(" + point.name + ")";
                 else
-                    return getTikzcodeFromCoordinates(point);
+                    return TikzCode.getTikzcodeFromCoordinates(point);
             }
 
             var pointAlreadyHere = getPointUnderCursor(pos.x, pos.y);
             if ((pointAlreadyHere == null) && (distance(mouseInteractionDrawPoint1, pos.x, pos.y) <= 0.5)) {
-                tikzcodeAddLine('\\node (' + getTikzcodeNewLabel() + ') at ' + getTikzcodeFromPoint(mouseInteractionDrawPoint1) + " {};");
+                TikzCode.addLine('\\node (' + TikzCode.getNewLabel() + ') at ' + getTikzcodeFromPoint(mouseInteractionDrawPoint1) + " {};");
                 whenmodifiedquick();
             }
             else {
@@ -395,7 +393,7 @@ window.onload = () => {
                 }
 
 
-                tikzcodeAddLine('\\draw ' + getTikzcodeFromPoint(mouseInteractionDrawPoint1) + ' edge' + edgeStyle + ' ' + getTikzcodeFromPoint(pointAlreadyHere) + ';');
+                TikzCode.addLine('\\draw ' + getTikzcodeFromPoint(mouseInteractionDrawPoint1) + ' edge' + edgeStyle + ' ' + getTikzcodeFromPoint(pointAlreadyHere) + ';');
                 whenmodifiedquick();
             }
 
@@ -407,7 +405,7 @@ window.onload = () => {
         var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePosPixels(canvas, e));
 
         if (pointCurrent == null) {
-            tikzcodeAddLine('\\node (' + getTikzcodeNewLabel() + ') at ' + getTikzcodeFromCoordinates(pos) + ' {};');
+            TikzCode.addLine('\\node (' + TikzCode.getNewLabel() + ') at ' + TikzCode.getTikzcodeFromCoordinates(pos) + ' {};');
             whenmodified();
         }
         else {
