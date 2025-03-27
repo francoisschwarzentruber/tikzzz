@@ -13,6 +13,11 @@ export class Handles {
     static update() {
         Handles.points = getPointsFromTikz(TikzCode.getCode());
     }
+
+
+
+
+
 }
 
 
@@ -116,3 +121,4 @@ export class HandleCoordinate {
     }
 
 }
+

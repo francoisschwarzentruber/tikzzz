@@ -80,6 +80,28 @@ class Viewport {
         return { x: ((p.x - this.boundedBoxHalfSize) / this.scaleratio), y: -((p.y - this.boundedBoxHalfSize) / this.scaleratio) };
     }
 
+
+
+
+    /**
+ * 
+ * @param {*} x 
+ * @param {*} y 
+ * @returns the handle that is close to {x, y} or null if there is none
+ */
+    getPointUnderCursor(x, y) {
+        let pointCurrent = null;
+        let d = this.boundedBoxHalfSize * 0.005;
+
+        for (const point of Handles.handles) {
+            if (distance(point, x, y) <= d) {
+                d = distance(point, x, y);
+                pointCurrent = point;
+            }
+        }
+        return pointCurrent;
+    }
+
 }
 
 
@@ -228,18 +250,6 @@ let mouseInteractionDrawPoints = undefined;
 function distance(point, x, y) { return Math.sqrt((point.x - x) * (point.x - x) + (point.y - y) * (point.y - y)); }
 
 
-function getPointUnderCursor(x, y) {
-    let pointCurrent = null;
-    let d = viewport.boundedBoxHalfSize * 0.005;
-
-    for (const point of Handles.handles) {
-        if (distance(point, x, y) <= d) {
-            d = distance(point, x, y);
-            pointCurrent = point;
-        }
-    }
-    return pointCurrent;
-}
 
 
 
@@ -274,7 +284,7 @@ window.onload = () => {
     canvas.onmousedown = function (e) {
         mouseButtonDown = true;
         var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePosPixels(canvas, e));
-        pointCurrent = getPointUnderCursor(pos.x, pos.y);
+        pointCurrent = viewport.getPointUnderCursor(pos.x, pos.y);
 
 
         if (guiMode == MODE_DRAW) {
@@ -287,7 +297,7 @@ window.onload = () => {
             mouseInteractionDrawPoints = new Array();
             mouseInteractionDrawPoints.push(mouseInteractionDrawPoint1);
         }
-        else {
+        else if (guiMode == MODE_SELECTION) {
             if (pointCurrent != null) {
                 TikzCode.coordinatesSelect(pointCurrent);
                 mouseInteraction = MOUSEINTERATION_MOVEPOINT;
@@ -310,7 +320,7 @@ window.onload = () => {
 
         if (!mouseButtonDown) {
 
-            var newpointCurrent = getPointUnderCursor(pos.x, pos.y);
+            var newpointCurrent = viewport.getPointUnderCursor(pos.x, pos.y);
 
             if (newpointCurrent != pointCurrent) {
                 pointCurrent = newpointCurrent;
@@ -324,6 +334,9 @@ window.onload = () => {
 
                 pointMoving = pos;
                 draw();
+
+            }
+            else if (mouseInteraction == MOUSEINTERATION_SELECT) {
 
             }
             else if (mouseInteraction == MOUSEINTERATION_DRAW) {
@@ -359,7 +372,7 @@ window.onload = () => {
                     return TikzCode.getTikzcodeFromCoordinates(point);
             }
 
-            var pointAlreadyHere = getPointUnderCursor(pos.x, pos.y);
+            var pointAlreadyHere = viewport.getPointUnderCursor(pos.x, pos.y);
             if ((pointAlreadyHere == null) && (distance(mouseInteractionDrawPoint1, pos.x, pos.y) <= 0.5)) {
                 TikzCode.addLine('\\node (' + TikzCode.getNewLabel() + ') at ' + getTikzcodeFromPoint(mouseInteractionDrawPoint1) + " {};");
                 whenmodifiedquick();

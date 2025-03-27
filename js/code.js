@@ -2,16 +2,39 @@ import { whenmodified } from "./compile.js";
 
 
 
-
+/**
+ * This class is a static class that represents the tikz code in the editor.
+ */
 export class TikzCode {
 
-
+    /**
+     * 
+     * @returns the tikz code in the editor
+     */
     static getCode() { return editor.getValue(); }
+    
+    
+    /**
+     * 
+     * @param {*} code
+     * @description set the tikz code in the editor 
+     */
     static setCode(code) { editor.setValue(code); }
 
-    static replaceIt(newtxt) { editor.session.replace(editor.selection.getRange(), newtxt); }
+
+    /**
+     * 
+     * @param {*} newtxt
+     * @description replace the current selection by newtxt 
+     */
+    static replaceSelection(newtxt) { editor.session.replace(editor.selection.getRange(), newtxt); }
 
 
+    /**
+     * 
+     * @param {*} point a handle
+     * @description select the portion of the text, e.g. "(1, 4)", that corresponds to the coordinates of the handle in the editor
+     */
     static coordinatesSelect(point) {
         editor.selection.setRange({
             start: editor.session.doc.indexToPosition(point.posbegin),
@@ -38,10 +61,6 @@ export class TikzCode {
         function getCurrentLineTrimedContent() {
             const currentLine = editor.session.getLine(editor.selection.getRange().end.row);
             return currentLine.trim()
-        }
-
-        function isCurrentLineEmpty() {
-            return getCurrentLineTrimedContent() == "";
         }
 
         editor.execCommand("gotolineend");
@@ -97,7 +116,7 @@ export class TikzCode {
 
 
     static selectionReplaceCoordinates(point) {
-        TikzCode.replaceIt(TikzCode.getTikzcodeFromCoordinates(point));
+        TikzCode.replaceSelection(TikzCode.getTikzcodeFromCoordinates(point));
     }
 
 
@@ -125,7 +144,7 @@ function addInsertionButton(caption, code) {
 const editor = ace.edit("code");
 editor.getSession().setUseWorker(false);
 editor.getSession().setMode("ace/mode/latex");
-TikzCode.replaceIt("\\begin{tikzpicture}\n   \n\\end{tikzpicture}")
+TikzCode.replaceSelection("\\begin{tikzpicture}\n   \n\\end{tikzpicture}")
 editor.gotoLine(2, 4);
 editor.commands.on('afterExec', () => whenmodified());
 
