@@ -1,5 +1,5 @@
 import { TikzCode } from "./code.js";
-import { getPointsFromTikz } from "./handle.js";
+import { Handles } from "./point.js";
 import { whenmodified, whenmodifiedquick } from "./compile.js";
 
 const MODE_SELECTION = 0;
@@ -21,7 +21,7 @@ function modedraw() {
     buttonModeSelection.classList.remove('active');
     buttonModeDraw.classList.add('active');
     canvas.style.cursor = "crosshair";
-} getPointsFromTikz
+}
 
 document.getElementById("buttonModeSelection").onclick = modeselection;
 document.getElementById("buttonModeDraw").onclick = modedraw;
@@ -44,14 +44,14 @@ class Viewport {
      * @description udpate the viewport from the tikzCode 
      */
     update(tikzCode) {
-        const points = getPointsFromTikz(tikzCode);
+        Handles.update();
 
         this.xmin = -Viewport.MAXCOORDDEFAULT;
         this.xmax = Viewport.MAXCOORDDEFAULT;
         this.ymin = -Viewport.MAXCOORDDEFAULT;
         this.ymax = Viewport.MAXCOORDDEFAULT;
 
-        for (const point of points) {
+        for (const point of Handles.handles) {
             this.xmin = Math.min(point.x, this.xmin);
             this.xmax = Math.max(point.x, this.xmax);
             this.ymin = Math.min(point.y, this.ymin);
@@ -86,12 +86,6 @@ class Viewport {
 export let viewport = new Viewport();
 
 
-
-let points = new Array();
-
-export function setPoints(pts) {
-    points = pts;
-}
 
 export function draw() {
 
@@ -163,7 +157,7 @@ export function draw() {
 
         ctx.strokeStyle = "#FF0000";
 
-        for (const point of points) {
+        for (const point of Handles.handles) {
             if (pointCurrent == point && mouseInteraction != MOUSEINTERATION_MOVEPOINT)
                 ctx.lineWidth = 5 / viewport.scaleratio;
             else
@@ -238,7 +232,7 @@ function getPointUnderCursor(x, y) {
     let pointCurrent = null;
     let d = viewport.boundedBoxHalfSize * 0.005;
 
-    for (const point of points) {
+    for (const point of Handles.handles) {
         if (distance(point, x, y) <= d) {
             d = distance(point, x, y);
             pointCurrent = point;
