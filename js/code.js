@@ -1,5 +1,6 @@
 import { whenmodified } from "./compile.js";
-
+import { Handles } from "./point.js";
+import { viewport } from "./drawing.js";
 
 
 /**
@@ -12,8 +13,8 @@ export class TikzCode {
      * @returns the tikz code in the editor
      */
     static getCode() { return editor.getValue(); }
-    
-    
+
+
     /**
      * 
      * @param {*} code
@@ -28,6 +29,19 @@ export class TikzCode {
      * @description replace the current selection by newtxt 
      */
     static replaceSelection(newtxt) { editor.session.replace(editor.selection.getRange(), newtxt); }
+
+
+    /**
+     * 
+     * @returns the current selection range in the editor {start, end} where start and end are the index positions in the tikz code
+     */
+    static getSelectionRange() {
+        const range = editor.selection.getRange();
+        return {
+            start: editor.session.doc.positionToIndex(range.start),
+            end: editor.session.doc.positionToIndex(range.end)
+        }
+    }
 
 
     /**
@@ -147,7 +161,8 @@ editor.getSession().setMode("ace/mode/latex");
 TikzCode.replaceSelection("\\begin{tikzpicture}\n   \n\\end{tikzpicture}")
 editor.gotoLine(2, 4);
 editor.commands.on('afterExec', () => whenmodified());
-
+editor.on('changeSelection', () => { console.log("changeselection"); Handles.update(); viewport.draw(); });
+//https://groups.google.com/g/ace-discuss/c/IgDAOH2XHTg
 
 addInsertionButton("node", "\\node (A) at (1, 1) {text};")
 addInsertionButton("edge", "\\draw (A) edge (B);")

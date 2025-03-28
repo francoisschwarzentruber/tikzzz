@@ -1,4 +1,4 @@
-import { getTikzCodeWithBoundingBox, draw } from "./drawing.js";
+import { getTikzCodeWithBoundingBox, viewport } from "./drawing.js";
 import { TikzCode } from "./code.js";
 import { Handles } from "./point.js";
 
@@ -81,7 +81,7 @@ async function compile(trueiffinalversiontodownload) {
 			img.src = svgFileName;
 			img.onload = function () {
 				gui_compilesuccess();
-				draw();
+				viewport.draw();
 			};
 			img.onerror = function () { gui_error("impossible to retrieve the SVG image from the server"); }
 		}
@@ -113,7 +113,7 @@ function askForCompilation(durationWait) {
 		isaskedcompiling = true;
 		if (compiletimer != null)
 			clearTimeout(compiletimer);
-		compiletimer = setTimeout(function () { compile(); Handles.update(); draw(); }, durationWait);
+		compiletimer = setTimeout(function () { compile(); Handles.update(); viewport.draw(); }, durationWait);
 	}
 }
 

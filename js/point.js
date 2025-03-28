@@ -11,7 +11,7 @@ export class Handles {
     }
 
     static update() {
-        Handles.points = getPointsFromTikz(TikzCode.getCode());
+        Handles.points = getPointsFromTikz();
     }
 
 
@@ -29,14 +29,15 @@ export class Handles {
  * code
  * name = the name of the corresponding node if there is one
  */
-function getPointsFromTikz(code) {
+function getPointsFromTikz() {
+    const code = TikzCode.getCode();
+    const codeSelectionRange = TikzCode.getSelectionRange();
     const points = new Array();
     let counter = 0;
     let name = undefined;
     let iname = undefined;
     let iend = undefined;
 
-    console.log("getPointsFromTikz");
     let i = 0;
     while (i >= 0) {
         i = code.indexOf("(", i);
@@ -59,7 +60,8 @@ function getPointsFromTikz(code) {
                         name = undefined;
                 }
 
-                points.push(new HandleCoordinate({ x: parseFloat(n1), y: parseFloat(n2), posbegin: i, posend: iend, name: name }));
+                const selected = (codeSelectionRange.start <= i) && (iend <= codeSelectionRange.end);
+                points.push(new HandleCoordinate({ selected, x: parseFloat(n1), y: parseFloat(n2), posbegin: i, posend: iend, name: name }));
             }
         }
 
@@ -97,6 +99,7 @@ export class HandleCoordinate {
         this.name = this.data.name;
         this.posbegin = this.data.posbegin;
         this.posend = this.data.posend;
+        this.selected = this.data.selected;
     }
 
 

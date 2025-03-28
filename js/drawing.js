@@ -102,126 +102,127 @@ class Viewport {
         return pointCurrent;
     }
 
+
+    draw() {
+
+        /**
+         * 
+         * @param {*} ctx
+         * @description draw a grid 
+         */
+        function drawGrid(ctx) {
+            ctx.beginPath();
+            ctx.strokeStyle = "#DDDDDD";
+            ctx.lineWidth = 0.8 / viewport.scaleratio;
+
+            function toGridSpacing(a) { return Math.floor(a * 2) / 2; }
+
+            const gridspacingDisplayed = toGridSpacing((viewport.maxcoord) / 10);
+            for (let ix = -viewport.maxcoord; ix < viewport.maxcoord; ix += gridspacingDisplayed) {
+                ctx.moveTo(ix * gridspacingDisplayed, -viewport.maxcoord);
+                ctx.lineTo(ix * gridspacingDisplayed, viewport.maxcoord);
+                ctx.moveTo(-viewport.maxcoord, ix * gridspacingDisplayed);
+                ctx.lineTo(viewport.maxcoord, ix * gridspacingDisplayed);
+            }
+            ctx.stroke();
+        }
+
+
+        /**
+         * 
+         * @param {*} ctx the context of the canvas, the context has been "transformed" so that it fits the coordinates of the tikz picture
+         * @param {*} point in the Tikz coordinates
+         * @description draw the point in the canvas (i.e. a cross)
+         */
+        function drawPoint(ctx, point) {
+            ctx.strokeStyle = point.selected ? "#5555FF" : "#FF0000";
+            var crosssize = 5 / viewport.scaleratio;
+            ctx.beginPath();
+            ctx.moveTo(point.x - crosssize, point.y - crosssize);
+            ctx.lineTo(point.x + crosssize, point.y + crosssize);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(point.x - crosssize, point.y + crosssize);
+            ctx.lineTo(point.x + crosssize, point.y - crosssize);
+            ctx.stroke();
+        }
+
+        function drawLines(ctx, polylinePoints) {
+            ctx.beginPath();
+            ctx.strokeStyle = "#888888";
+            ctx.lineWidth = 1 / viewport.scaleratio;
+            ctx.moveTo(polylinePoints[0].x, polylinePoints[0].y);
+            for (let i = 1; i < polylinePoints.length; i++)
+                ctx.lineTo(polylinePoints[i].x, polylinePoints[i].y);
+
+            ctx.stroke();
+        }
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        try {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.save();
+            ctx.translate(viewport.boundedBoxHalfSize, viewport.boundedBoxHalfSize);
+            ctx.scale(viewport.scaleratio, -viewport.scaleratio);
+
+            drawGrid(ctx);
+
+
+
+            for (const point of Handles.handles) {
+                if (pointCurrent == point && mouseInteraction != MOUSEINTERATION_MOVEPOINT)
+                    ctx.lineWidth = 5 / viewport.scaleratio;
+                else
+                    ctx.lineWidth = 1 / viewport.scaleratio;
+                drawPoint(ctx, point);
+
+            }
+
+            if (mouseInteraction == MOUSEINTERATION_MOVEPOINT) {
+                if (pointMoving != null) {
+                    ctx.strokeStyle = "#FF0000";
+                    ctx.lineWidth = 5 / viewport.scaleratio;
+                    drawPoint(ctx, pointMoving);
+                }
+            }
+            else if (mouseInteraction == MOUSEINTERATION_DRAW) {
+                drawLines(ctx, mouseInteractionDrawPoints);
+            }
+
+            ctx.restore();
+            ctx.save();
+            ctx.translate(viewport.boundedBoxHalfSize, viewport.boundedBoxHalfSize);
+            // /!\ we can not make ctx.scale(scaleratio, -scaleratio); because the text would be vertically mirrored
+            ctx.scale(viewport.scaleratio, viewport.scaleratio);
+
+            ctx.lineWidth = 1 / viewport.scaleratio;
+            if (pointCurrent != null) {
+                if (pointCurrent.name != undefined) {
+                    ctx.font = "0.9px Arial";
+                    ctx.fillStyle = "#FF0000";
+                    ctx.fillText(pointCurrent.name, pointCurrent.x + 0.5, -pointCurrent.y + 0.5);
+                    console.log(pointCurrent.name);
+                }
+            }
+
+            ctx.restore();
+        }
+        catch (e) {
+            console.log("ERROR when drawing the image");
+            console.log(e)
+        }
+    }
+
+
 }
 
 
 export let viewport = new Viewport();
-
-
-
-export function draw() {
-
-    /**
-     * 
-     * @param {*} ctx
-     * @description draw a grid 
-     */
-    function drawGrid(ctx) {
-        ctx.beginPath();
-        ctx.strokeStyle = "#DDDDDD";
-        ctx.lineWidth = 0.8 / viewport.scaleratio;
-
-        function toGridSpacing(a) { return Math.floor(a * 2) / 2; }
-
-        const gridspacingDisplayed = toGridSpacing((viewport.maxcoord) / 10);
-        for (let ix = -viewport.maxcoord; ix < viewport.maxcoord; ix += gridspacingDisplayed) {
-            ctx.moveTo(ix * gridspacingDisplayed, -viewport.maxcoord);
-            ctx.lineTo(ix * gridspacingDisplayed, viewport.maxcoord);
-            ctx.moveTo(-viewport.maxcoord, ix * gridspacingDisplayed);
-            ctx.lineTo(viewport.maxcoord, ix * gridspacingDisplayed);
-        }
-        ctx.stroke();
-    }
-
-
-    /**
-     * 
-     * @param {*} ctx the context of the canvas, the context has been "transformed" so that it fits the coordinates of the tikz picture
-     * @param {*} point in the Tikz coordinates
-     * @description draw the point in the canvas (i.e. a cross)
-     */
-    function drawPoint(ctx, point) {
-        var crosssize = 5 / viewport.scaleratio;
-        ctx.beginPath();
-        ctx.moveTo(point.x - crosssize, point.y - crosssize);
-        ctx.lineTo(point.x + crosssize, point.y + crosssize);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(point.x - crosssize, point.y + crosssize);
-        ctx.lineTo(point.x + crosssize, point.y - crosssize);
-        ctx.stroke();
-    }
-
-    function drawLines(ctx, polylinePoints) {
-        ctx.beginPath();
-        ctx.strokeStyle = "#888888";
-        ctx.lineWidth = 1 / viewport.scaleratio;
-        ctx.moveTo(polylinePoints[0].x, polylinePoints[0].y);
-        for (let i = 1; i < polylinePoints.length; i++)
-            ctx.lineTo(polylinePoints[i].x, polylinePoints[i].y);
-
-        ctx.stroke();
-    }
-
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-
-    try {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.save();
-        ctx.translate(viewport.boundedBoxHalfSize, viewport.boundedBoxHalfSize);
-        ctx.scale(viewport.scaleratio, -viewport.scaleratio);
-
-        drawGrid(ctx);
-
-        ctx.strokeStyle = "#FF0000";
-
-        for (const point of Handles.handles) {
-            if (pointCurrent == point && mouseInteraction != MOUSEINTERATION_MOVEPOINT)
-                ctx.lineWidth = 5 / viewport.scaleratio;
-            else
-                ctx.lineWidth = 1 / viewport.scaleratio;
-            drawPoint(ctx, point);
-
-        }
-
-        if (mouseInteraction == MOUSEINTERATION_MOVEPOINT) {
-            if (pointMoving != null) {
-                ctx.strokeStyle = "#FF0000";
-                ctx.lineWidth = 5 / viewport.scaleratio;
-                drawPoint(ctx, pointMoving);
-            }
-        }
-        else if (mouseInteraction == MOUSEINTERATION_DRAW) {
-            drawLines(ctx, mouseInteractionDrawPoints);
-        }
-
-        ctx.restore();
-        ctx.save();
-        ctx.translate(viewport.boundedBoxHalfSize, viewport.boundedBoxHalfSize);
-        // /!\ we can not make ctx.scale(scaleratio, -scaleratio); because the text would be vertically mirrored
-        ctx.scale(viewport.scaleratio, viewport.scaleratio);
-
-        ctx.lineWidth = 1 / viewport.scaleratio;
-        if (pointCurrent != null) {
-            if (pointCurrent.name != undefined) {
-                ctx.font = "0.9px Arial";
-                ctx.fillStyle = "#FF0000";
-                ctx.fillText(pointCurrent.name, pointCurrent.x + 0.5, -pointCurrent.y + 0.5);
-                console.log(pointCurrent.name);
-            }
-        }
-
-        ctx.restore();
-    }
-    catch (e) {
-        console.log("ERROR when drawing the image");
-        console.log(e)
-    }
-}
 
 
 
@@ -309,7 +310,7 @@ window.onload = () => {
 
 
 
-        draw();
+        viewport.draw();
 
     }
 
@@ -324,7 +325,7 @@ window.onload = () => {
 
             if (newpointCurrent != pointCurrent) {
                 pointCurrent = newpointCurrent;
-                draw();
+                viewport.draw();
             }
         }
         else {
@@ -333,7 +334,7 @@ window.onload = () => {
                     return;
 
                 pointMoving = pos;
-                draw();
+                viewport.draw();
 
             }
             else if (mouseInteraction == MOUSEINTERATION_SELECT) {
@@ -342,7 +343,7 @@ window.onload = () => {
             else if (mouseInteraction == MOUSEINTERATION_DRAW) {
                 pos = viewport.getCoordinatesFromPixelCoordinates(getMousePosPixels(canvas, e));
                 mouseInteractionDrawPoints.push(pos);
-                draw();
+                viewport.draw();
             }
         }
 
