@@ -299,7 +299,8 @@ window.onload = () => {
         }
         else if (guiMode == MODE_SELECTION) {
             if (pointCurrent != null) {
-                TikzCode.coordinatesSelect(pointCurrent);
+                if (!pointCurrent.selected)
+                    TikzCode.coordinatesSelect(pointCurrent);
                 mouseInteraction = MOUSEINTERATION_MOVEPOINT;
                 lastPoint = { x: pointCurrent.x, y: pointCurrent.y }
             }
