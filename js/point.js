@@ -105,15 +105,14 @@ export class HandleCoordinate {
 
     /**
      * 
-     * @param {*} newPosition in the tikz coordinate system, an object of the form {x, y}
-     * @description replace the coordinates in the tikz code
+     * @description replace the coordinates in the tikz code by the current position written inthe point
      */
-    apply(newPosition) {
-        this.x = newPosition.x;
-        this.y = newPosition.y;
+    validate() {
+        const newCoordTikzCode = TikzCode.getTikzcodeFromCoordinates(this);
         const lastposend = this.posend;
-        this.posend = this.posbegin + TikzCode.getTikzcodeFromCoordinates(newPosition).length;
-        TikzCode.selectionReplaceCoordinates(newPosition);
+        TikzCode.setSelectionRange(this.posbegin, this.posend + 1);
+        TikzCode.replaceSelection(newCoordTikzCode);
+        this.posend = this.posbegin + newCoordTikzCode.length-1;
 
         for (const point of Handles.handles) {
             if (point.posbegin > lastposend) {

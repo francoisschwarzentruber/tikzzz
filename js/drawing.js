@@ -184,10 +184,10 @@ class Viewport {
             }
 
             if (mouseInteraction == MOUSEINTERATION_MOVEPOINT) {
-                if (pointMoving != null) {
+                if (pointCurrent != null) {
                     ctx.strokeStyle = "#FF0000";
                     ctx.lineWidth = 5 / viewport.scaleratio;
-                    drawPoint(ctx, pointMoving);
+                    drawPoint(ctx, pointCurrent);
                 }
             }
             else if (mouseInteraction == MOUSEINTERATION_DRAW) {
@@ -206,7 +206,6 @@ class Viewport {
                     ctx.font = "0.9px Arial";
                     ctx.fillStyle = "#FF0000";
                     ctx.fillText(pointCurrent.name, pointCurrent.x + 0.5, -pointCurrent.y + 0.5);
-                    console.log(pointCurrent.name);
                 }
             }
 
@@ -255,7 +254,7 @@ function distance(point, x, y) { return Math.sqrt((point.x - x) * (point.x - x) 
 
 
 let pointCurrent = undefined;
-let pointMoving;
+let lastPoint = undefined;
 
 
 
@@ -302,7 +301,7 @@ window.onload = () => {
             if (pointCurrent != null) {
                 TikzCode.coordinatesSelect(pointCurrent);
                 mouseInteraction = MOUSEINTERATION_MOVEPOINT;
-                pointMoving = pointCurrent;
+                lastPoint = { x: pointCurrent.x, y: pointCurrent.y }
             }
             else
                 mouseInteraction = MOUSEINTERATION_SELECT;
@@ -315,13 +314,13 @@ window.onload = () => {
     }
 
     canvas.onmousemove = function (e) {
-        var pos = getCoordinatesFromPixelCoordinatesGrid(getMousePosPixels(canvas, e));
+        const pos = getCoordinatesFromPixelCoordinatesGrid(getMousePosPixels(canvas, e));
         var x = pos.x;
         var y = pos.y;
 
         if (!mouseButtonDown) {
 
-            var newpointCurrent = viewport.getPointUnderCursor(pos.x, pos.y);
+            const newpointCurrent = viewport.getPointUnderCursor(pos.x, pos.y);
 
             if (newpointCurrent != pointCurrent) {
                 pointCurrent = newpointCurrent;
@@ -333,7 +332,19 @@ window.onload = () => {
                 if (pointCurrent == null)
                     return;
 
-                pointMoving = pos;
+                if (pointCurrent.selected) {
+                    for (const point of Handles.handles) if (point.selected) {
+                        point.x += pos.x - lastPoint.x;
+                        point.y += pos.y - lastPoint.y;
+                    }
+                }
+                else {
+                    pointCurrent.x += pos.x - lastPoint.x;
+                    pointCurrent.y += pos.y - lastPoint.y;
+                }
+
+
+                lastPoint = pos;
                 viewport.draw();
 
             }
@@ -357,12 +368,18 @@ window.onload = () => {
 
 
         if ((mouseInteraction == MOUSEINTERATION_MOVEPOINT) && (pointCurrent != null)) {
-            if (pos.x != pointCurrent.x || pos.y != pointCurrent.y) {
-                pointCurrent.apply(pos);
 
-                pointCurrent = null;
-                whenmodifiedquick();
+            if (pointCurrent.selected) {
+                for (const point of Handles.handles) if (point.selected) {
+                    point.validate();
+                }
             }
+            else {
+                pointCurrent.validate();
+            }
+
+            pointCurrent = null;
+            whenmodifiedquick();
         }
         else if (mouseInteraction == MOUSEINTERATION_DRAW) {
 

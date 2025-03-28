@@ -44,6 +44,13 @@ export class TikzCode {
     }
 
 
+    static setSelectionRange(startIndex, endIndex) {
+        const start = editor.session.doc.indexToPosition(startIndex);
+        const end = editor.session.doc.indexToPosition(endIndex);
+        editor.selection.setRange({ start, end });
+
+    }
+
     /**
      * 
      * @param {*} point a handle
@@ -129,10 +136,6 @@ export class TikzCode {
     }
 
 
-    static selectionReplaceCoordinates(point) {
-        TikzCode.replaceSelection(TikzCode.getTikzcodeFromCoordinates(point));
-    }
-
 
 }
 
@@ -161,7 +164,16 @@ editor.getSession().setMode("ace/mode/latex");
 TikzCode.replaceSelection("\\begin{tikzpicture}\n   \n\\end{tikzpicture}")
 editor.gotoLine(2, 4);
 editor.commands.on('afterExec', () => whenmodified());
-editor.on('changeSelection', () => { console.log("changeselection"); Handles.update(); viewport.draw(); });
+
+
+
+
+function onSelectionChangeViaMouseOrKeyboard() {
+    console.log("changeselection");
+    Handles.update();
+    viewport.draw();
+}
+editor.on('mousemove', onSelectionChangeViaMouseOrKeyboard);
 //https://groups.google.com/g/ace-discuss/c/IgDAOH2XHTg
 
 addInsertionButton("node", "\\node (A) at (1, 1) {text};")
@@ -169,7 +181,7 @@ addInsertionButton("edge", "\\draw (A) edge (B);")
 addInsertionButton("loop", "\\draw (A) edge[loop, loop right] (A);")
 addInsertionButton("rectangle", "\\draw (1, 1) rectangle (2, 2);")
 addInsertionButton("ellipse", "\\draw (1, 1) ellipse (2cm and 1cm);")
-addInsertionButton("curve", "\\draw plot [smooth cycle] coordinates {(0, 0) (1, 0) (2, 2)};")
+addInsertionButton("curve", "\\draw) plot [smooth cycle] coordinates {(0, 0) (1, 0) (2, 2)};")
 
 
 
