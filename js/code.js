@@ -119,9 +119,9 @@ export class TikzCode {
 
 
     /**
-     * TO BE MOVED IN HANDLE,  but not possible because raw points when we move a point, Or should be as a static method there
-     * @param {*} point 
-     * @returns 
+     * @param {*} point an object with {x, y} coordinates
+     * @returns the corresponding Tikzcode
+     * @example: (1, 2) -> "(1, 2)"
      */
     static getTikzcodeFromCoordinates(point) {
         function formatToAvoidUglyNumber(x) {
@@ -142,48 +142,58 @@ export class TikzCode {
 
 
 
-/**
- * 
- * @param {*} caption e.g. "node" (the name of what to insert)
- * @param {*} code the corresponding tikz code to insert
- * @description create a button in the toolbar to insert the corresponding tikz code
- */
-function addInsertionButton(caption, code) {
-    const b = document.createElement("button");
-    b.innerHTML = caption;
-    b.onclick = () => { TikzCode.addLine(code); whenmodified(); editor.focus() };
-    b.title = "Insert " + code;
-    toolbarInsert.appendChild(b);
-}
-
-
-/* initialization */
 const editor = ace.edit("code");
-editor.getSession().setUseWorker(false);
-editor.getSession().setMode("ace/mode/latex");
-TikzCode.replaceSelection("\\begin{tikzpicture}\n   \n\\end{tikzpicture}")
-editor.gotoLine(2, 4);
-editor.commands.on('afterExec', () => whenmodified());
 
 
+/** 
+ * @description initialization function
+ */
+function editorInit() {
 
+    editor.getSession().setUseWorker(false);
+    editor.getSession().setMode("ace/mode/latex");
+    TikzCode.replaceSelection("\\begin{tikzpicture}\n   \n\\end{tikzpicture}")
+    editor.gotoLine(2, 4);
+    editor.commands.on('afterExec', () => whenmodified());
 
-function onSelectionChangeViaMouseOrKeyboard() {
-    console.log("changeselection");
-    Handles.update();
-    viewport.draw();
+    function onSelectionChangeViaMouseOrKeyboard() {
+        console.log("changeselection");
+        Handles.update();
+        viewport.draw();
+    }
+    editor.on('mousemove', onSelectionChangeViaMouseOrKeyboard);
+    //https://groups.google.com/g/ace-discuss/c/IgDAOH2XHTg
+
 }
-editor.on('mousemove', onSelectionChangeViaMouseOrKeyboard);
-//https://groups.google.com/g/ace-discuss/c/IgDAOH2XHTg
 
-addInsertionButton("node", "\\node (A) at (1, 1) {text};")
-addInsertionButton("edge", "\\draw (A) edge (B);")
-addInsertionButton("loop", "\\draw (A) edge[loop, loop right] (A);")
-addInsertionButton("rectangle", "\\draw (1, 1) rectangle (2, 2);")
-addInsertionButton("ellipse", "\\draw (1, 1) ellipse (2cm and 1cm);")
-addInsertionButton("curve", "\\draw) plot [smooth cycle] coordinates {(0, 0) (1, 0) (2, 2)};")
+/**
+ * @description create a toolbar with buttons for inserting tikz code
+ */
+function toolbarInsertionInit() {
+    /**
+     * 
+     * @param {*} caption e.g. "node" (the name of what to insert)
+     * @param {*} code the corresponding tikz code to insert
+     * @description create a button in the toolbar to insert the corresponding tikz code
+     */
+    function addInsertionButton(caption, code) {
+        const b = document.createElement("button");
+        b.innerHTML = caption;
+        b.onclick = () => { TikzCode.addLine(code); whenmodified(); editor.focus() };
+        b.title = "Insert " + code;
+        toolbarInsert.appendChild(b);
+    }
 
+    addInsertionButton("node", "\\node (A) at (1, 1) {text};")
+    addInsertionButton("edge", "\\draw (A) edge (B);")
+    addInsertionButton("loop", "\\draw (A) edge[loop, loop right] (A);")
+    addInsertionButton("rectangle", "\\draw (1, 1) rectangle (2, 2);")
+    addInsertionButton("ellipse", "\\draw (1, 1) ellipse (2cm and 1cm);")
+    addInsertionButton("curve", "\\draw) plot [smooth cycle] coordinates {(0, 0) (1, 0) (2, 2)};")
+}
 
+editorInit();
+toolbarInsertionInit();
 
 
 

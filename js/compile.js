@@ -26,6 +26,7 @@ let compiletimer = null;
  * 
  * @param {*} trueiffinalversiontodownload, if true we really compile the good image for downloading
  * if false or undefined, we compile an image to be overlapped with the GUI
+ * @description compile the tikz code in the editor and display it in the GUI (or prepare it for downloading)
  */
 async function compile(trueiffinalversiontodownload) {
 	isaskedcompiling = false;
