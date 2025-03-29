@@ -1,9 +1,12 @@
 # [tikzzz](https://github.com/francoisschwarzentruber/tikzzz/)
 
 **tikzzz** is a tiny tikz editor in the browser.
-- when you write your tikz code, the image is updated ;
-- When you move nodes with the mouse, the code is updated.
 
+## Features
+
+- **What you see is what you get**: when you write the TikZ code, the image is updated
+- **Moving points** update the code. You can select some portion of the code and move the points appearing in that selection.
+  
 > It is inspired by QTikZ and KTikZ, see [here](https://github.com/fhackenberger/ktikz).
 
 ## Screenshot
