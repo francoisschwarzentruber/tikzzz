@@ -6,6 +6,8 @@
 
 - **What you see is what you get**: when you write the TikZ code, the image is updated
 - **Moving points** update the code. You can select some portion of the code and move the points appearing in that selection.
+- **Download directly a SVG**
+- **Insertion** of standard objects (nodes, edges, etc.)
   
 > It is inspired by QTikZ and KTikZ, see [here](https://github.com/fhackenberger/ktikz).
 
